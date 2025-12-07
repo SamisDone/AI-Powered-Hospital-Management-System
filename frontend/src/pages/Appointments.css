@@ -1,0 +1,132 @@
+.appointments-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.appointments-page h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.appointments-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.appointments-filters button {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.appointments-filters button:hover {
+  background: #f8f9fa;
+}
+
+.appointments-filters .filter-active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.appointment-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.appointment-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-primary {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge-success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-danger {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.appointment-details p {
+  margin: 8px 0;
+  color: #666;
+}
+
+.appointment-details strong {
+  color: #333;
+}
+
+.btn-danger {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.no-appointments {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .appointment-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
