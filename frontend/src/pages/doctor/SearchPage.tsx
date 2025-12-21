@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Search, Filter, Stethoscope, Star, Clock } from 'lucide-react';
 
@@ -140,7 +140,7 @@ export default function DoctorSearchPage() {
                           <span className="text-muted-foreground">Fee: </span>
                           <span className="font-semibold">${doctor.consultationFee || '50'}</span>
                         </div>
-                        <Link to={`/doctor/${doctor.uid}/slots`}>
+                        <Link to="/doctor/$doctorId/slots" params={{ doctorId: doctor.uid }}>
                           <Button size="sm" variant="gradient">
                             Book Now
                           </Button>

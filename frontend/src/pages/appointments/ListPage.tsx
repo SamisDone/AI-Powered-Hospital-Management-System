@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, CheckCircle, XCircle, Search, Plus, Pill } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -274,7 +274,13 @@ export default function AppointmentsPage() {
                                 className="text-primary"
                                 asChild
                               >
-                                <Link to={`/prescriptions?patientId=${appointment.patientId}&patientName=${encodeURIComponent(appointment.patientName || '')}`}>
+                                <Link 
+                                  to="/prescriptions"
+                                  search={{ 
+                                    patientId: appointment.patientId, 
+                                    patientName: appointment.patientName || '' 
+                                  }}
+                                >
                                   <Pill className="w-4 h-4 mr-1" />
                                   Prescribe
                                 </Link>

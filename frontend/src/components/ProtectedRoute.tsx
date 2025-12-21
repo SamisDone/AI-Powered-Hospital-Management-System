@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from '@tanstack/react-router';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { FullPageLoader } from '@/components/ui/loading-spinner';
 
@@ -23,7 +23,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (allowedRoles && userProfile && !allowedRoles.includes(userProfile.role)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

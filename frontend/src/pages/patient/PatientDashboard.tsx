@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, Brain, Pill, FileText, ArrowRight, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatsCard } from "@/components/ui/StatsCard";

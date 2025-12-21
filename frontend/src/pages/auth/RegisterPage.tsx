@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { UserPlus, Mail, Lock, User, Phone, Heart, ArrowRight, Stethoscope } from 'lucide-react';
 import { toast } from 'sonner';
@@ -134,7 +134,7 @@ export default function RegisterPage() {
         });
 
         toast.success('Account created! Please verify your email.');
-        navigate('/verify-email');
+        navigate({ to: '/verify-email' });
       } else {
         const errorMsg = result.error?.includes('email-already-in-use')
           ? 'An account with this email already exists'

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { LogIn, Mail, Lock, Heart, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -64,7 +64,7 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success('Welcome back!');
-        navigate('/dashboard');
+        navigate({ to: '/dashboard' });
       } else {
         const errorMsg = result.error?.includes('user-not-found') 
           ? 'No account found with this email'

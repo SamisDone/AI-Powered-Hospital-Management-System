@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { Activity, Twitter, Linkedin, Github, Mail, MapPin, Phone } from "lucide-react";
 
 const footerLinks = {

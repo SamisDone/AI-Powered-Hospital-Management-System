@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Mail, ArrowLeft, Heart, CheckCircle } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';

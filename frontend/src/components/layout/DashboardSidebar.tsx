@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -58,7 +58,8 @@ const roleNavigation = {
 
 export function DashboardSidebar({ role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const navigation = roleNavigation[role];
@@ -66,7 +67,7 @@ export function DashboardSidebar({ role }: SidebarProps) {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/");
+      navigate({ to: "/" });
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -117,7 +118,7 @@ export function DashboardSidebar({ role }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navigation.map((item, index) => {
-          const isActive = location.pathname === item.href;
+          const isActive = currentPath === item.href;
           return (
             <motion.div
               key={item.label}
@@ -185,7 +186,7 @@ export function DashboardSidebar({ role }: SidebarProps) {
             variant="ghost" 
             size={collapsed ? "icon" : "sm"} 
             className="flex-1"
-            onClick={() => navigate("/notifications")}
+            onClick={() => navigate({ to: "/notifications" })}
           >
             <Bell className="w-4 h-4" />
             {!collapsed && <span className="ml-2">Notifications</span>}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Mail, RefreshCw, CheckCircle, Heart, ArrowRight } from 'lucide-react';
 import { sendEmailVerification, reload } from 'firebase/auth';
@@ -36,7 +36,7 @@ export default function VerifyEmailPage() {
           setVerified(true);
           clearInterval(interval);
           toast.success('Email verified successfully!');
-          setTimeout(() => navigate('/dashboard'), 1500);
+          setTimeout(() => navigate({ to: '/dashboard' }), 1500);
         }
       } catch (error) {
         console.error('Error checking verification:', error);
@@ -71,7 +71,7 @@ export default function VerifyEmailPage() {
       if (currentUser.emailVerified) {
         setVerified(true);
         toast.success('Email verified!');
-        setTimeout(() => navigate('/dashboard'), 1500);
+        setTimeout(() => navigate({ to: '/dashboard' }), 1500);
       } else {
         toast.info('Email not verified yet');
       }

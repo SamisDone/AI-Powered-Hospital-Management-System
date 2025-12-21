@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Activity, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
   const { currentUser } = useAuth();
 
   return (
@@ -54,7 +55,7 @@ export function Navbar() {
                   to={link.href}
                   className={cn(
                     "text-sm font-medium transition-colors relative group",
-                    location.pathname === link.href
+                    currentPath === link.href
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearch, useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pill, Plus, Calendar, User, X, Trash2, TestTube, FileText } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,15 +57,16 @@ const emptyTest: Test = { name: '', instructions: '' };
 
 export default function PrescriptionsPage() {
   const { userProfile } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const search = useSearch({ strict: false }) as any;
+  const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [patients, setPatients] = useState<{id: string, name: string}[]>([]);
   
-  const urlPatientId = searchParams.get('patientId');
-  const urlPatientName = searchParams.get('patientName');
+  const urlPatientId = search.patientId;
+  const urlPatientName = search.patientName;
   
   const [formData, setFormData] = useState({
     patientId: urlPatientId || '',
@@ -86,9 +87,10 @@ export default function PrescriptionsPage() {
       });
       setFormData(prev => ({ ...prev, patientId: urlPatientId }));
       setShowForm(true);
-      setSearchParams({});
+      // Clear search params after consuming them
+      navigate({ to: '/prescriptions', search: {}, replace: true });
     }
-  }, [urlPatientId, urlPatientName, isDoctor]);
+  }, [urlPatientId, urlPatientName, isDoctor, navigate]);
 
   useEffect(() => {
     if (!userProfile?.uid) return;

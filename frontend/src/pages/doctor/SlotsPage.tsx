@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, User, ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -68,7 +68,7 @@ const generateTimeSlots = (startTime: string, endTime: string, duration: number)
 };
 
 export default function DoctorSlotsPage() {
-  const { doctorId } = useParams<{ doctorId: string }>();
+  const { doctorId } = useParams({ strict: false });
   const navigate = useNavigate();
   const { userProfile } = useAuth();
   
@@ -165,7 +165,7 @@ export default function DoctorSlotsPage() {
         });
 
         toast.success('Appointment booked successfully!');
-        navigate('/appointments');
+        navigate({ to: '/appointments' });
       } else {
         toast.error('Failed to book appointment');
       }
@@ -192,7 +192,7 @@ export default function DoctorSlotsPage() {
         className="space-y-6"
       >
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => navigate('/doctor/search')}>
+        <Button variant="ghost" onClick={() => navigate({ to: '/doctor/search' })}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Doctors
         </Button>
