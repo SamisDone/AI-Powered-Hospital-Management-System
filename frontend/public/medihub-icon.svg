@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="medihub-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M16 4C10.5 4 6.5 8 5 12c-1.5 4 0 8 4 10.5s7 4 7 5.5c0-1.5 3-3 7-5.5s5.5-6.5 4-10.5C25.5 8 21.5 4 16 4z" fill="url(#medihub-gradient)"/>
+  <path d="M16 11v6m-3-3h6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
