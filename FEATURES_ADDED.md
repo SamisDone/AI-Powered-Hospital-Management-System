@@ -26,7 +26,7 @@ This document highlights the major features and improvements added during the re
 
 - **In-Progress State**: Added support for 'in-progress' status to track active consultations.
 - **Status Filtering**: Appointments page now includes tabs for filtering by status (Scheduled, Completed, Cancelled).
-- **Graceful Redirection**: Fixed logout logic to redirect users to the landing page instead of the login screen.
+- **Redirection**: Fixed logout logic to redirect users to the landing page instead of the login screen.
 
 ### 5. Medical Records Integration
 
