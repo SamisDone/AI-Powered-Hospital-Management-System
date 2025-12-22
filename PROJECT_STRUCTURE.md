@@ -20,6 +20,8 @@ This document provides a comprehensive overview of the MediHub application's dir
 - `layout/`: High-level layout components.
   - `DashboardLayout.tsx`: Wrapper for all dashboard pages, providing the sidebar and main content area.
   - `DashboardSidebar.tsx`: The primary navigation sidebar with role-based links.
+- `billing/`:
+  - `InvoicePDF.tsx`: Professional PDF invoice component built with `@react-pdf/renderer`.
 - `ui/`: Standardized, low-level UI components (Buttons, Inputs, Cards, etc.) ensuring visual consistency.
 - `ProtectedRoute.tsx`: A wrapper that ensures only authenticated users with specific roles can access certain routes.
 
@@ -32,6 +34,8 @@ This document provides a comprehensive overview of the MediHub application's dir
 
 - `firebase.ts`: Initialization and configuration of the Firebase SDK.
 - `firebase-utils.ts`: Custom utility functions for Firestore (e.g., `listenToCollection`, `addDocument`, `updateDocument`) to simplify data operations.
+- `pdf-utils.tsx`: Utility for triggering PDF generation and browser downloads.
+- `seed-data.ts`: Professional medical test catalog and database seeding logic.
 - `utils.ts`: General helper functions for Tailwind CSS class merging and styling.
 
 #### 📂 `src/pages/` (View Layer)
@@ -49,7 +53,9 @@ All pages are organized by role and functionality for better maintainability.
 - **Patient Pages** (`/pages/patient/`)
   - `PatientDashboard.tsx`: Overview for patients (upcoming appointments, recent prescriptions).
   - `MedicalRecordsPage.tsx`: Portal for patients to upload and view their medical history.
-  - `PrescriptionsPage.tsx`: List of issued medications with real-time status updates.
+  - `PrescriptionsPage.tsx`: List of issued medications and tests with real-time status updates.
+  - `TestBookingPage.tsx`: Interface for patients to book diagnostic tests prescribed by doctors.
+  - `BillingPage.tsx`: Searchable list of all patient bills with PDF download options.
 - **Core Pages** (`/pages/`)
   - `LandingPage.tsx`: The public face of MediHub.
   - `NotificationsPage.tsx`: Real-time alerts for all user types.
@@ -69,7 +75,8 @@ All pages are organized by role and functionality for better maintainability.
 
 ## ⚙️ Configuration Files
 
-- `App.tsx`: The main routing hub of the application.
+- `App.tsx`: The standard application entry component.
+- `router.tsx`: The primary routing engine (built with TanStack Router).
 - `index.css`: Global styles and Tailwind v4 design system (variables, `@theme`, and utilities).
 - `main.tsx`: Entry point for the React application.
 - `vite.config.ts`: Configuration for the Vite build tool and Tailwind CSS plugin.
