@@ -41,6 +41,15 @@ This document highlights the major features and improvements added during the re
 - **Secure File Upload**: Patients can now upload PDFs/Images of their medical history to Firebase Storage.
 - **Role-Based Access**: Restricted viewing and management of records to authorized users.
 
+### 6. Universal Administrative Oversight
+
+- **Omniscient Monitoring**: Admins now have site-wide visibility, allowing them to oversee all appointments, prescriptions, and medical records irrespective of user restrictions.
+- **Billing Control Center**: Implemented administrative toggle to manage "Paid/Unpaid" status for any patient bill.
+- **System Metrics Hub**:
+  - **Global Analytics**: Dedicated module for monitoring network-wide performance and departmental activity.
+  - **Real-Time System Status**: Live monitoring of database health, record counts, and cloud connection integrity.
+- **Admin Initialization Utility**: Integrated a fail-safe setup button on the login page for secure default admin account creation.
+
 ## 📈 Performance & UI Improvements
 
 - **Optimized Data Fetching**: Improved query logic to reduce Firestore reads while maintaining real-time updates.

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MedAvatar } from "@/components/ui/MedAvatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { listenToCollection } from "@/lib/firebase-utils";
 
 interface SidebarProps {
   role: "patient" | "doctor" | "admin";
@@ -52,10 +53,10 @@ const roleNavigation = {
     { icon: Settings, label: "Settings", href: "/settings" },
   ],
   admin: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/admin" },
     { icon: BarChart3, label: "System Analytics", href: "/admin/analytics" },
     { icon: UserCog, label: "User Management", href: "/admin/users" },
-    { icon: Shield, label: "System Status", href: "/admin/dashboard" },
+    { icon: Shield, label: "System Status", href: "/admin/status" },
     { icon: Settings, label: "Settings", href: "/settings" },
   ],
 };
@@ -68,6 +69,26 @@ export function DashboardSidebar({ role }: SidebarProps) {
   const { currentUser, logout } = useAuth();
   const navigation = roleNavigation[role];
 
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const unsubscribe = listenToCollection<any>(
+      'notifications',
+      [
+        { field: 'userId', operator: '==', value: currentUser.uid },
+        { field: 'read', operator: '==', value: false }
+      ],
+      (data) => {
+        setUnreadCount(data.length);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [currentUser?.uid]);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -78,7 +99,6 @@ export function DashboardSidebar({ role }: SidebarProps) {
   };
 
   const userName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "User";
-  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
 
   return (
     <motion.aside
@@ -189,10 +209,15 @@ export function DashboardSidebar({ role }: SidebarProps) {
           <Button 
             variant="ghost" 
             size={collapsed ? "icon" : "sm"} 
-            className="flex-1"
+            className="flex-1 relative"
             onClick={() => navigate({ to: "/notifications" })}
           >
-            <Bell className="w-4 h-4" />
+            <div className="relative">
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-background animate-pulse" />
+              )}
+            </div>
             {!collapsed && <span className="ml-2">Notifications</span>}
           </Button>
           <Button 

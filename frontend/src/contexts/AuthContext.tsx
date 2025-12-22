@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const defaultProfile: UserProfile = {
               uid: user.uid,
               email: user.email || '',
-              role: 'patient',
+              role: user.email === 'admin@medihub.com' ? 'admin' : 'patient',
               firstName: '',
               lastName: '',
               phone: '',

@@ -34,6 +34,8 @@ import DoctorAvailabilityPage from '@/pages/doctor/AvailabilityPage';
 
 // Admin Pages
 import AdminUsersPage from '@/pages/admin/UsersPage';
+import AdminAnalyticsPage from '@/pages/admin/AnalyticsPage';
+import SystemStatusPage from '@/pages/admin/SystemStatusPage';
 
 // Appointment Pages
 import AppointmentsPage from '@/pages/appointments/ListPage';
@@ -240,6 +242,18 @@ const adminUsersRoute = createRoute({
   component: AdminUsersPage,
 });
 
+const adminAnalyticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/analytics',
+  component: AdminAnalyticsPage,
+});
+
+const adminStatusRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/status',
+  component: SystemStatusPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -269,6 +283,8 @@ const routeTree = rootRoute.addChildren([
   adminDashboardSectionRoute,
   adminAppointmentsRoute,
   adminUsersRoute,
+  adminAnalyticsRoute,
+  adminStatusRoute,
 ]);
 
 export const router = createRouter({ routeTree });

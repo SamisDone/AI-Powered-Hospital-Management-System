@@ -54,11 +54,9 @@ const FULL_TEST_LIST = [
   // E. Microbiology
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Blood Culture', price: 1500 },
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Urine Culture', price: 1000 },
-  { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Stool Culture', price: 1000 },
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Sputum AFB', price: 500 },
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Gram Stain', price: 300 },
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Acid-Fast Stain', price: 300 },
-  { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'PCR Tests', price: 4000 },
   { category: 'Laboratory Tests', subcategory: 'Microbiology', name: 'Rapid Antigen Tests', price: 1000 },
 
   // 2. Urine & Stool Tests
@@ -148,7 +146,6 @@ const FULL_TEST_LIST = [
   { category: 'Genetic & Molecular', subcategory: 'Genetic Tests', name: 'Karyotyping', price: 6000 },
   { category: 'Genetic & Molecular', subcategory: 'Molecular Tests', name: 'Whole Genome Sequencing', price: 150000 },
   { category: 'Genetic & Molecular', subcategory: 'Molecular Tests', name: 'Whole Exome Sequencing', price: 80000 },
-  { category: 'Genetic & Molecular', subcategory: 'Molecular Tests', name: 'PCR', price: 4000 },
   { category: 'Genetic & Molecular', subcategory: 'Molecular Tests', name: 'FISH', price: 10000 },
   { category: 'Genetic & Molecular', subcategory: 'Genetic Tests', name: 'Prenatal Genetic Screening', price: 20000 },
 

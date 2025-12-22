@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, ShoppingCart, Info, User } from 'lucide-react';
+import { Check, ShoppingCart, Info, User, Search } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { addDocument, listenToCollection } from '@/lib/firebase-utils';
 import { seedTestsCollection } from '@/lib/seed-data';
 
@@ -18,17 +19,20 @@ interface TestItem {
   name: string;
   price: number;
   description: string;
+  category: string;
 }
 
 export default function TestBookingPage() {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
-  const [prescribedInfo, setPrescribedInfo] = useState<{name: string, doctorName: string}[]>([]);
+  const [prescribedInfo, setPrescribedInfo] = useState<{id?: string, name: string, doctorName: string}[]>([]);
   const [availableTests, setAvailableTests] = useState<TestItem[]>([]);
   const [bookedTestIds, setBookedTestIds] = useState<string[]>([]);
   const [loadingTests, setLoadingTests] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
     let unsubTests: () => void;
@@ -57,10 +61,14 @@ export default function TestBookingPage() {
   useEffect(() => {
     if (!userProfile?.uid) return;
 
-    // 2. Listen to existing test bookings to mark as booked
+    const isAdmin = userProfile?.role === 'admin';
+    const constraints = isAdmin 
+      ? [] 
+      : [{ field: 'patientId', operator: '==', value: userProfile.uid }];
+
     const unsubBookings = listenToCollection<any>(
       'test_bookings',
-      [{ field: 'patientId', operator: '==', value: userProfile.uid }],
+      constraints as any,
       (data) => {
         const ids: string[] = [];
         data.forEach(b => {
@@ -80,19 +88,22 @@ export default function TestBookingPage() {
   useEffect(() => {
     if (!userProfile?.uid || availableTests.length === 0) return;
 
-    console.log('Fetching prescriptions for patient:', userProfile.uid);
+    const isAdmin = userProfile?.role === 'admin';
+    const constraints = isAdmin 
+      ? [] 
+      : [{ field: 'patientId', operator: '==', value: userProfile.uid }];
+
     const unsub = listenToCollection<any>(
       'prescriptions',
-      [
-        { field: 'patientId', operator: '==', value: userProfile.uid }
-      ],
+      constraints as any,
       (data) => {
-        console.log(`Found ${data.length} total prescriptions for this patient`);
-        const allPrescribed: {name: string, doctorName: string}[] = [];
+        console.log(`Found ${data.length} total prescriptions for monitoring`);
+        const allPrescribed: {id?: string, name: string, doctorName: string}[] = [];
         data.forEach(rx => {
           if (rx.tests && Array.isArray(rx.tests)) {
             rx.tests.forEach((t: any) => {
               allPrescribed.push({
+                id: t.id,
                 name: t.name.toLowerCase().trim(),
                 doctorName: rx.doctorName || 'Unknown Doctor'
               });
@@ -107,7 +118,9 @@ export default function TestBookingPage() {
           .filter(t => {
             const normalizedCatalogName = t.name.toLowerCase().trim();
             const isMatch = allPrescribed.some(p => 
-              normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)
+              (p.id && p.id === t.id) || 
+              (normalizedCatalogName === p.name) ||
+              (!p.id && (normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)))
             );
             return isMatch && !bookedTestIds.includes(t.id);
           })
@@ -128,21 +141,34 @@ export default function TestBookingPage() {
     return () => unsub();
   }, [userProfile?.uid, availableTests, bookedTestIds]);
 
-  // Derived list: ONLY show tests that are prescribed (broad matching)
+  // Derived list: ONLY show tests that are prescribed (strict matching with broad fallback)
   const displayTests = availableTests
     .filter(t => {
       const normalizedCatalogName = t.name.toLowerCase().trim();
       return prescribedInfo.some(p => 
-        normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)
+        (p.id && p.id === t.id) || 
+        (normalizedCatalogName === p.name) ||
+        (!p.id && (normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)))
       );
     })
     .map(t => {
       const normalizedCatalogName = t.name.toLowerCase().trim();
       const pMatch = prescribedInfo.find(p => 
-        normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)
+        (p.id && p.id === t.id) || 
+        (normalizedCatalogName === p.name) ||
+        (!p.id && (normalizedCatalogName.includes(p.name) || p.name.includes(normalizedCatalogName)))
       );
       return { ...t, prescribedBy: pMatch?.doctorName || 'Unknown Doctor' };
     });
+
+  const uniqueCategories = ['all', ...new Set(availableTests.map(t => t.category))].filter(Boolean);
+
+  const filteredTests = displayTests.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          t.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || t.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
   
   console.log('Tests to display:', displayTests.length);
 
@@ -228,6 +254,32 @@ export default function TestBookingPage() {
     
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/50">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search prescribed tests..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-background"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
+            {uniqueCategories.map((cat) => (
+              <Button
+                key={cat}
+                variant={categoryFilter === cat ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCategoryFilter(cat)}
+                className="capitalize whitespace-nowrap"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {loadingTests ? (
             [...Array(6)].map((_, i) => (
@@ -241,22 +293,25 @@ export default function TestBookingPage() {
                 </CardContent>
               </Card>
             ))
-          ) : displayTests.length === 0 ? (
+          ) : filteredTests.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <GlassCard className="p-8">
-                <Info className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold">No Prescribed Tests Found</h3>
                 <p className="text-muted-foreground max-w-sm mx-auto">
-                  Only tests prescribed by your doctor will appear here for booking. 
-                  Check your prescriptions or consult with your physician.
+                  {searchTerm || categoryFilter !== 'all' 
+                    ? "Try adjusting your search or filters to find your prescribed tests."
+                    : "Only tests prescribed by your doctor will appear here for booking. Check your prescriptions or consult with your physician."}
                 </p>
               </GlassCard>
             </div>
           ) : (
-            displayTests.map((test) => {
+            filteredTests.map((test) => {
               const isBooked = bookedTestIds.includes(test.id);
-              const isPrescribed = prescribedInfo.some(
-                p => test.name.toLowerCase().includes(p.name) || p.name.includes(test.name.toLowerCase())
+              const isPrescribed = prescribedInfo.some(p => 
+                (p.id && p.id === test.id) || 
+                (test.name.toLowerCase() === p.name) ||
+                (!p.id && (test.name.toLowerCase().includes(p.name) || p.name.includes(test.name.toLowerCase())))
               );
 
               return (

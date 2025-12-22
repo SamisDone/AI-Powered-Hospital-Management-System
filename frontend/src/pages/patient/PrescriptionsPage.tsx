@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pill, Plus, Calendar, User, X, Trash2, TestTube, FileText } from 'lucide-react';
+import { Pill, Plus, Calendar, User, X, Trash2, TestTube, FileText, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -68,6 +68,8 @@ export default function PrescriptionsPage() {
   const [saving, setSaving] = useState(false);
   const [patients, setPatients] = useState<{id: string, name: string}[]>([]);
   const [availableTests, setAvailableTests] = useState<{id: string, name: string, category: string}[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
   
   const urlPatientId = search.patientId;
   const urlPatientName = search.patientName;
@@ -127,10 +129,14 @@ export default function PrescriptionsPage() {
   useEffect(() => {
     if (!userProfile?.uid) return;
 
-    const field = isDoctor ? 'doctorId' : 'patientId';
+    const isAdmin = userProfile?.role === 'admin';
+    const constraints = isAdmin 
+      ? [] 
+      : [{ field: isDoctor ? 'doctorId' : 'patientId', operator: '==', value: userProfile.uid }];
+
     const unsubscribe = listenToCollection<Prescription>(
       'prescriptions',
-      [{ field, operator: '==', value: userProfile.uid }],
+      constraints as any,
       (data) => {
         setPrescriptions(data);
         setLoading(false);
@@ -285,6 +291,16 @@ export default function PrescriptionsPage() {
     }
   };
 
+  const filteredPrescriptions = prescriptions.filter(rx => {
+    const matchesSearch = 
+      rx.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rx.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rx.medications?.some(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      rx.tests?.some(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === 'all' || rx.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <DashboardLayout role={userProfile?.role || 'patient'} title="Prescriptions">
       <motion.div
@@ -305,6 +321,32 @@ export default function PrescriptionsPage() {
               New Prescription
             </Button>
           )}
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/50">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by doctor, patient, or medicine..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex gap-2">
+            {(['all', 'active', 'completed'] as const).map((s) => (
+              <Button
+                key={s}
+                variant={statusFilter === s ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter(s)}
+                className="capitalize"
+              >
+                {s}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* New Prescription Form */}
@@ -495,21 +537,23 @@ export default function PrescriptionsPage() {
               <Skeleton key={i} className="h-48 w-full" />
             ))}
           </div>
-        ) : prescriptions.length === 0 ? (
+        ) : filteredPrescriptions.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No prescriptions</h3>
+              <h3 className="text-lg font-semibold mb-2">No prescriptions found</h3>
               <p className="text-muted-foreground">
-                {isDoctor 
-                  ? "You haven't created any prescriptions yet"
-                  : "You don't have any prescriptions"}
+                {searchTerm || statusFilter !== 'all' 
+                  ? "Try adjusting your search or filters"
+                  : isDoctor 
+                    ? "You haven't created any prescriptions yet"
+                    : "You don't have any prescriptions"}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
-            {prescriptions.map((rx) => (
+            {filteredPrescriptions.map((rx) => (
               <Card key={rx.id} className={rx.status === 'completed' ? 'opacity-60' : ''}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">

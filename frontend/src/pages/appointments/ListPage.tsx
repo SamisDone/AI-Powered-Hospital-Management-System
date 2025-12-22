@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { listenToCollection, updateDocument, addDocument } from '@/lib/firebase-utils';
@@ -41,6 +42,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const isDoctor = userProfile?.role === 'doctor';
   const isAdmin = userProfile?.role === 'admin';
@@ -127,9 +129,14 @@ export default function AppointmentsPage() {
     }
   };
 
-  const filteredAppointments = filter === 'all' 
-    ? appointments 
-    : appointments.filter(a => a.status === filter);
+  const filteredAppointments = appointments.filter(a => {
+    const matchesFilter = filter === 'all' || a.status === filter;
+    const matchesSearch = 
+      a.doctorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.reason?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
     <DashboardLayout role={userProfile?.role || 'patient'} title="Appointments">
@@ -156,20 +163,31 @@ export default function AppointmentsPage() {
           </div>
         </motion.div>
 
-        {/* Filter tabs */}
-        <motion.div variants={fadeIn} className="flex gap-2">
-          {(['all', 'scheduled', 'completed', 'cancelled'] as const).map((f) => (
-            <Button
-              key={f}
-              variant={filter === f ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter(f)}
-              className="capitalize"
-            >
-              {f}
-            </Button>
-          ))}
-        </motion.div>
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/50">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name or reason..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-background"
+            />
+          </div>
+          <div className="flex gap-2">
+            {(['all', 'scheduled', 'completed', 'cancelled'] as const).map((f) => (
+              <Button
+                key={f}
+                variant={filter === f ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter(f)}
+                className="capitalize"
+              >
+                {f}
+              </Button>
+            ))}
+          </div>
+        </div>
 
         <motion.div variants={fadeIn}>
           {loading ? (

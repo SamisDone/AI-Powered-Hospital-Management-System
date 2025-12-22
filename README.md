@@ -21,9 +21,11 @@ MediHub is a comprehensive, modern healthcare platform designed to streamline th
 
 ### 🛡️ Admin Panel
 
-- **Comprehensive Analytics**: Monitor daily/weekly appointment trends with localized charts.
-- **User Management**: Activate/deactivate accounts and manage role-based permissions.
-- **System Health**: Oversight of total patients, active doctors, and system-wide statistics.
+- **Omniscient Monitoring**: Global visibility into all appointments, medical records, and prescriptions across the network.
+- **Universal Billing Controls**: Manage payment statuses and financial oversight for all patient transactions.
+- **Global Analytics**: High-level monitoring of system growth, activity peaks, and departmental performance.
+- **System Health**: Real-time status tracking of cloud infrastructure, resource usage, and record integrity.
+- **User Management**: Unified portal to manage roles, permissions, and account statuses.
 
 ### ⚙️ Platform Features
 

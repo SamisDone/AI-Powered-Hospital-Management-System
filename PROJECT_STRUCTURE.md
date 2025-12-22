@@ -45,6 +45,8 @@ All pages are organized by role and functionality for better maintainability.
 - **Admin Pages** (`/pages/admin/`)
   - `AdminDashboard.tsx`: High-level system overview, stats, and health monitoring.
   - `UsersPage.tsx`: Admin-only portal to manage user roles and account statuses.
+  - `AnalyticsPage.tsx`: Global system metrics and departmental performance monitoring.
+  - `SystemStatusPage.tsx`: Real-time cloud database integrity and resource monitoring.
 - **Doctor Pages** (`/pages/doctor/`)
   - `DoctorDashboard.tsx`: Real-time view of today's patient queue and status updates.
   - `AvailabilityPage.tsx`: Interface for doctors to manage their weekly time slots.

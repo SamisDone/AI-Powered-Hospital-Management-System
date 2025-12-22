@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Upload, Download, Trash2, Calendar, User, Eye } from 'lucide-react';
+import { FileText, Upload, Download, Trash2, Calendar, User, Eye, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,15 +48,22 @@ export default function MedicalRecordsPage() {
     notes: ''
   });
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | MedicalRecord['type']>('all');
+
   const isDoctor = userProfile?.role === 'doctor';
 
   useEffect(() => {
     if (!userProfile?.uid) return;
 
-    const field = isDoctor ? 'doctorId' : 'patientId';
+    const isAdmin = userProfile?.role === 'admin';
+    const constraints = isAdmin 
+      ? [] 
+      : [{ field: isDoctor ? 'doctorId' : 'patientId', operator: '==', value: userProfile.uid }];
+
     const unsubscribe = listenToCollection<MedicalRecord>(
       'medical_records',
-      [{ field, operator: '==', value: userProfile.uid }],
+      constraints as any,
       (data) => {
         setRecords(data.sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -124,6 +131,14 @@ export default function MedicalRecordsPage() {
     }
   };
 
+  const filteredRecords = records.filter(record => {
+    const matchesSearch = record.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          record.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          record.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'all' || record.type === typeFilter;
+    return matchesSearch && matchesType;
+  });
+
   return (
     <DashboardLayout role={userProfile?.role || 'patient'} title="Medical Records">
       <motion.div
@@ -137,6 +152,32 @@ export default function MedicalRecordsPage() {
             <p className="text-muted-foreground">
               {isDoctor ? 'View patient medical records' : 'Upload and manage your medical records'}
             </p>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/20 p-4 rounded-xl border border-border/50">
+          <div className="relative w-full sm:w-96">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by title or file name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
+            {(['all', 'report', 'lab', 'imaging', 'prescription', 'other'] as const).map((t) => (
+              <Button
+                key={t}
+                variant={typeFilter === t ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTypeFilter(t)}
+                className="capitalize whitespace-nowrap"
+              >
+                {t}
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -203,21 +244,23 @@ export default function MedicalRecordsPage() {
               <Skeleton key={i} className="h-40 w-full" />
             ))}
           </div>
-        ) : records.length === 0 ? (
+        ) : filteredRecords.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No medical records</h3>
+              <h3 className="text-lg font-semibold mb-2">No medical records found</h3>
               <p className="text-muted-foreground">
-                {isDoctor 
-                  ? "No patient records to display"
-                  : "Upload your first medical record to get started"}
+                {searchTerm || typeFilter !== 'all' 
+                  ? "Try adjusting your search or filters"
+                  : isDoctor 
+                    ? "No patient records to display"
+                    : "Upload your first medical record to get started"}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {records.map((record) => (
+            {filteredRecords.map((record) => (
               <Card key={record.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">

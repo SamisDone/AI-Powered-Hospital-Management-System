@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Receipt, Search, Filter } from 'lucide-react';
+import { Download, Receipt, Search, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
-import { listenToCollection } from '@/lib/firebase-utils';
+import { listenToCollection, updateDocument } from '@/lib/firebase-utils';
 import { generateBillPDF } from '@/lib/pdf-utils';
 
 interface Bill {
@@ -30,6 +30,7 @@ export default function BillingPage() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
 
   useEffect(() => {
     if (!userProfile) return;
@@ -54,11 +55,14 @@ export default function BillingPage() {
     return () => unsub && unsub();
   }, [userProfile?.uid, userProfile?.role]);
 
-  const filteredBills = bills.filter(bill => 
-    bill.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill.patientName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBills = bills.filter(bill => {
+    const matchesSearch = 
+      bill.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bill.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bill.patientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || bill.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleDownload = async (bill: Bill) => {
     try {
@@ -66,6 +70,16 @@ export default function BillingPage() {
       toast.success('Invoice downloaded');
     } catch {
       toast.error('Failed to generate PDF');
+    }
+  };
+
+  const toggleStatus = async (bill: Bill) => {
+    const newStatus = bill.status === 'paid' ? 'unpaid' : 'paid';
+    try {
+      await updateDocument('bills', bill.id, { status: newStatus });
+      toast.success(`Bill marked as ${newStatus}`);
+    } catch {
+      toast.error('Failed to update status');
     }
   };
 
@@ -95,10 +109,19 @@ export default function BillingPage() {
                   className="pl-9"
                 />
               </div>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                {(['all', 'paid', 'unpaid'] as const).map((s) => (
+                  <Button
+                    key={s}
+                    variant={statusFilter === s ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter(s)}
+                    className="capitalize flex-1 sm:flex-initial"
+                  >
+                    {s}
+                  </Button>
+                ))}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -112,7 +135,11 @@ export default function BillingPage() {
               <div className="text-center py-12">
                 <Receipt className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
                 <h3 className="text-lg font-medium">No bills found</h3>
-                <p className="text-muted-foreground">You don't have any billing records yet.</p>
+                <p className="text-muted-foreground">
+                  {searchTerm || statusFilter !== 'all' 
+                    ? "Try adjusting your search or filters"
+                    : "You don't have any billing records yet."}
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -160,15 +187,37 @@ export default function BillingPage() {
                           </Badge>
                         </td>
                         <td className="py-4 px-4 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleDownload(bill)}
-                            className="text-primary hover:text-primary hover:bg-primary/10"
-                          >
-                            <Download className="w-4 h-4 mr-1" />
-                            PDF
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            {userProfile?.role === 'admin' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleStatus(bill)}
+                                className={bill.status === 'paid' ? 'text-destructive' : 'text-success'}
+                              >
+                                {bill.status === 'paid' ? (
+                                  <>
+                                    <XCircle className="w-4 h-4 mr-1" />
+                                    Unpaid
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                                    Paid
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDownload(bill)}
+                              className="text-primary hover:text-primary hover:bg-primary/10"
+                            >
+                              <Download className="w-4 h-4 mr-1" />
+                              PDF
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
