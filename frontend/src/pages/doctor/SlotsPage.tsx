@@ -155,11 +155,34 @@ export default function DoctorSlotsPage() {
       const result = await addDocument('appointments', appointmentData);
       
       if (result.success) {
+        // Create bill
+        await addDocument('bills', {
+          patientId: userProfile.uid,
+          patientName: `${userProfile.firstName} ${userProfile.lastName}`,
+          doctorId: doctor.uid,
+          doctorName: `${doctor.firstName} ${doctor.lastName}`,
+          type: 'appointment',
+          description: `Consultation with Dr. ${doctor.firstName} ${doctor.lastName}`,
+          amount: Number(doctor.consultationFee) || 500,
+          date: new Date().toISOString(),
+          status: 'unpaid',
+          appointmentId: result.id
+        });
+
         // Create notification for the doctor
         await addDocument('notifications', {
           userId: doctor.uid,
           title: 'New Appointment Booked',
           message: `${userProfile.firstName} ${userProfile.lastName} has booked an appointment for ${selectedDate} at ${selectedTime}`,
+          type: 'appointment',
+          read: false
+        });
+
+        // Create notification for the patient
+        await addDocument('notifications', {
+          userId: userProfile.uid,
+          title: 'Appointment Confirmed',
+          message: `Your appointment with Dr. ${doctor.firstName} ${doctor.lastName} is confirmed for ${selectedDate} at ${selectedTime}`,
           type: 'appointment',
           read: false
         });
@@ -217,7 +240,7 @@ export default function DoctorSlotsPage() {
                   <h2 className="text-xl font-bold">Dr. {doctor.firstName} {doctor.lastName}</h2>
                   <Badge variant="secondary">{doctor.specialization || 'General'}</Badge>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {doctor.experience || '5'}+ years experience • ${doctor.consultationFee || '50'} per visit
+                    {doctor.experience || '5'}+ years experience • {doctor.consultationFee || '500'} BDT per visit
                   </p>
                 </div>
               </div>

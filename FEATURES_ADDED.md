@@ -16,13 +16,21 @@ This document highlights the major features and improvements added during the re
 - **Local Timezone Logic**: Standardized all date calculations (Today's queue, weekly stats) to use local time instead of UTC, ensuring 100% accuracy.
 - **Instant Stats Update**: Dashboard metrics (patient counts, completed appointments) now reflect Firestore changes immediately without page refresh.
 
-### 3. Functional Settings & Notifications
+### 3. Prescribing Doctor Attribution
 
-- **Notifications Page**: A dedicated hub for system alerts, appointment reminders, and prescription updates with "Mark as Read" functionality.
-- **Settings Page**: Full profile management system for users and doctors to update personal info, bio, and specialization.
-- **Navigation Integration**: Seamless sidebar access to these core features across all roles.
+- **Full Traceability**: All test bookings and billing records now capture and display the prescribing doctor's name.
+- **Invoice Clarity**: PDF invoices explicitly state "Prescribed by Dr. [Name]" for medical accountability.
+- **Seamless Flow**: From prescription to booking to billing, the doctor's name follows the patient's journey.
 
-### 4. Appointment Lifecycle Management
+### 4. Advanced Security & Communication
+
+- **Account Protection**: Users can now update their passwords and delete their accounts with secure multi-step confirmations directly from Settings.
+- **Automated Communication Loop**:
+  - **Auto-Notifications**: Real-time alerts are triggered for new prescriptions, completed medical orders, and booking confirmations.
+  - **Anti-Flicker Layout**: Optimized route transitions to ensure role-specific dashboards load cleanly without visual glitches.
+- **Persistent Preferences**: Notification settings (Email, System, Appointments) are now saved to Firestore and persist across all devices.
+
+### 5. Appointment Lifecycle Management
 
 - **In-Progress State**: Added support for 'in-progress' status to track active consultations.
 - **Status Filtering**: Appointments page now includes tabs for filtering by status (Scheduled, Completed, Cancelled).

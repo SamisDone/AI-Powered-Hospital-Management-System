@@ -18,6 +18,11 @@ export interface UserProfile {
   avatar?: string;
   isActive?: boolean;
   isAvailable?: boolean;
+  notificationPreferences?: {
+    email: boolean;
+    system: boolean;
+    appointments: boolean;
+  };
   createdAt?: Date;
 }
 
@@ -55,6 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setCurrentUser(user);
       
       if (user) {
+        setLoading(true); // Start loading when user is detected
         // Listen to profile changes
         if (unsubProfile) unsubProfile();
         

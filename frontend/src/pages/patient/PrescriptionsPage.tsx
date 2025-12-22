@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { addDocument, listenToCollection, updateDocument } from '@/lib/firebase-utils';
+import { seedTestsCollection } from '@/lib/seed-data';
 
 interface Medication {
   name: string;
@@ -22,7 +23,9 @@ interface Medication {
 }
 
 interface Test {
+  id?: string;
   name: string;
+  category?: string;
   instructions?: string;
 }
 
@@ -64,9 +67,38 @@ export default function PrescriptionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [patients, setPatients] = useState<{id: string, name: string}[]>([]);
+  const [availableTests, setAvailableTests] = useState<{id: string, name: string, category: string}[]>([]);
   
   const urlPatientId = search.patientId;
   const urlPatientName = search.patientName;
+
+  useEffect(() => {
+    const init = async () => {
+      // Seed if catalog is incomplete
+      await seedTestsCollection();
+      
+      // Fetch available tests for the searchable dropdown
+      const unsub = listenToCollection<any>(
+        'available_tests',
+        [],
+        (data) => {
+          setAvailableTests(data.map(t => ({ 
+            id: t.id, 
+            name: t.name, 
+            category: t.category || 'General' 
+          })));
+        }
+      );
+      return unsub;
+    };
+
+    let unsub: () => void;
+    init().then(cleanup => {
+      if (cleanup) unsub = cleanup;
+    });
+
+    return () => unsub && unsub();
+  }, []);
   
   const [formData, setFormData] = useState({
     patientId: urlPatientId || '',
@@ -155,6 +187,16 @@ export default function PrescriptionsPage() {
   const updateTest = (index: number, field: keyof Test, value: string) => {
     const updated = [...formData.tests];
     updated[index] = { ...updated[index], [field]: value };
+    
+    // If the name changed, try to find a matching test to link ID/Category
+    if (field === 'name') {
+      const match = availableTests.find(t => t.name.toLowerCase() === value.toLowerCase());
+      if (match) {
+        updated[index].id = match.id;
+        updated[index].category = match.category;
+      }
+    }
+    
     setFormData({ ...formData, tests: updated });
   };
 
@@ -202,10 +244,11 @@ export default function PrescriptionsPage() {
       
       if (result.success) {
         // Create notification for the patient
+        const hasTests = prescription.tests && prescription.tests.length > 0;
         await addDocument('notifications', {
           userId: formData.patientId,
           title: 'New Prescription Issued',
-          message: `Dr. ${userProfile.firstName} ${userProfile.lastName} has issued a new prescription for you.`,
+          message: `Dr. ${userProfile.firstName} ${userProfile.lastName} has issued a new prescription for you${hasTests ? ' including diagnostic tests' : ''}.`,
           type: 'prescription',
           read: false
         });
@@ -385,6 +428,7 @@ export default function PrescriptionsPage() {
                               value={test.name}
                               onChange={(e) => updateTest(index, 'name', e.target.value)}
                               placeholder="e.g., Blood Sugar Test"
+                              list="available-tests"
                               required
                             />
                           </div>
@@ -410,6 +454,14 @@ export default function PrescriptionsPage() {
                       ))
                     )}
                   </div>
+
+                  <datalist id="available-tests">
+                    {availableTests.map((t) => (
+                      <option key={t.id} value={t.name}>
+                        {t.category}
+                      </option>
+                    ))}
+                  </datalist>
 
                   {/* Notes */}
                   <div className="space-y-2">

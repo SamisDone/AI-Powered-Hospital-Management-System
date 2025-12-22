@@ -4,6 +4,8 @@ import { DashboardSidebar } from "./DashboardSidebar";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { FullPageLoader } from "@/components/ui/loading-spinner";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -12,6 +14,12 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, role, title }: DashboardLayoutProps) {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <FullPageLoader />;
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar role={role} />

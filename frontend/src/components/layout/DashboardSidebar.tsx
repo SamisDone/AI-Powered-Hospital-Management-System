@@ -18,6 +18,8 @@ import {
   Pill,
   Search,
   Brain,
+  Beaker,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,6 +39,8 @@ const roleNavigation = {
     { icon: BarChart3, label: "Health Insights", href: "/analytics" },
     { icon: Pill, label: "Prescriptions", href: "/prescriptions" },
     { icon: FileText, label: "Medical Records", href: "/medical-records" },
+    { icon: Beaker, label: "Test Booking", href: "/test-booking" },
+    { icon: Receipt, label: "Billing", href: "/billing" },
     { icon: Settings, label: "Settings", href: "/settings" },
   ],
   doctor: [

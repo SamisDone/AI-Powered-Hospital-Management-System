@@ -23,6 +23,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updatePassword,
+  deleteUser,
   type User
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -78,6 +80,26 @@ export const logout = async (): Promise<FirebaseResult> => {
 
 export const onAuthChange = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const updateUserPassword = async (password: string): Promise<FirebaseResult> => {
+  try {
+    if (!auth.currentUser) throw new Error("No user logged in");
+    await updatePassword(auth.currentUser, password);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+};
+
+export const deleteUserAuth = async (): Promise<FirebaseResult> => {
+  try {
+    if (!auth.currentUser) throw new Error("No user logged in");
+    await deleteUser(auth.currentUser);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
 };
 
 // ==================== Firestore Operations ====================

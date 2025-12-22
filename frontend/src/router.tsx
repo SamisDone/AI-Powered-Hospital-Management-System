@@ -42,6 +42,8 @@ import BookAppointmentPage from '@/pages/appointments/BookPage';
 // Additional Pages
 import PrescriptionsPage from '@/pages/patient/PrescriptionsPage';
 import MedicalRecordsPage from '@/pages/patient/MedicalRecordsPage';
+import TestBookingPage from '@/pages/patient/TestBookingPage';
+import BillingPage from '@/pages/patient/BillingPage';
 
 // Root Route
 const rootRoute = createRootRoute({
@@ -166,6 +168,18 @@ const medicalRecordsRoute = createRoute({
   component: MedicalRecordsPage,
 });
 
+const testBookingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/test-booking',
+  component: TestBookingPage,
+});
+
+const billingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/billing',
+  component: BillingPage,
+});
+
 const notificationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/notifications',
@@ -243,6 +257,8 @@ const routeTree = rootRoute.addChildren([
   bookAppointmentRoute,
   prescriptionsRoute,
   medicalRecordsRoute,
+  testBookingRoute,
+  billingRoute,
   notificationsRoute,
   settingsRoute,
   aiReportSummaryRoute,

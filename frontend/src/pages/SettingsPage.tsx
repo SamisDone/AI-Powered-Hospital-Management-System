@@ -15,8 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { updateDocument } from "@/lib/firebase-utils";
+import { updateDocument, updateUserPassword, deleteUserAuth } from "@/lib/firebase-utils";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 export default function SettingsPage() {
   const { userProfile, setUserProfile } = useAuth();
@@ -30,21 +31,88 @@ export default function SettingsPage() {
     bio: userProfile?.bio || "",
   });
 
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    email: userProfile?.notificationPreferences?.email ?? true,
+    system: userProfile?.notificationPreferences?.system ?? true,
+    appointments: userProfile?.notificationPreferences?.appointments ?? true,
+  });
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userProfile?.uid) return;
 
     setLoading(true);
     try {
-      const result = await updateDocument('users', userProfile.uid, formData);
+      const result = await updateDocument('users', userProfile.uid, {
+        ...formData,
+        notificationPreferences: notificationPrefs
+      });
       if (result.success) {
-        setUserProfile({ ...userProfile, ...formData });
-        toast.success("Profile updated successfully");
+        setUserProfile({ 
+          ...userProfile, 
+          ...formData, 
+          notificationPreferences: notificationPrefs 
+        });
+        toast.success("Settings updated successfully");
       } else {
-        toast.error(result.error || "Failed to update profile");
+        toast.error(result.error || "Failed to update settings");
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
+    const newPassword = prompt("Enter your new password (minimum 6 characters):");
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await updateUserPassword(newPassword);
+      if (result.success) {
+        toast.success("Password updated successfully");
+      } else {
+        toast.error(result.error || "Failed to update password");
+      }
+    } catch (error) {
+      toast.error("An error occurred during password update");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccountDeletion = async () => {
+    if (!confirm("Are you SURE you want to delete your account? This action is permanent and cannot be undone.")) {
+      return;
+    }
+
+    if (!confirm("Final Confirmation: All your data will be permanently removed. Proceed?")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Delete Firestore record
+      if (userProfile?.uid) {
+        await updateDocument('users', userProfile.uid, { isActive: false }); // Soft delete first
+      }
+      
+      // 2. Delete Auth record
+      const result = await deleteUserAuth();
+      if (result.success) {
+        toast.success("Account deleted successfully");
+        window.location.href = "/"; // Force redirect to landing
+      } else {
+        toast.error(result.error || "Failed to delete account. You may need to re-login to perform this sensitive action.");
+      }
+    } catch (error) {
+      toast.error("An error occurred during account deletion");
     } finally {
       setLoading(false);
     }
@@ -174,7 +242,7 @@ export default function SettingsPage() {
                     <p className="font-medium">Password</p>
                     <p className="text-xs text-muted-foreground">Last updated 3 months ago</p>
                   </div>
-                  <Button variant="outline" size="sm">Update Password</Button>
+                  <Button variant="outline" size="sm" onClick={handlePasswordUpdate}>Update Password</Button>
                 </div>
                 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-destructive/5 border border-destructive/10">
@@ -182,7 +250,7 @@ export default function SettingsPage() {
                     <p className="font-medium text-destructive">Account Deletion</p>
                     <p className="text-xs text-muted-foreground">Permanently delete your account and all data</p>
                   </div>
-                  <Button variant="destructive" size="sm">Delete Account</Button>
+                  <Button variant="destructive" size="sm" onClick={handleAccountDeletion}>Delete Account</Button>
                 </div>
               </div>
             </GlassCard>
@@ -197,22 +265,29 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">Choose how you want to be notified about important updates</p>
               </div>
 
-              <div className="space-y-4 pt-4">
+               <div className="space-y-4 pt-4">
                 {[
-                  { title: "Email Notifications", desc: "Receive appointment reminders via email" },
-                  { title: "System Alerts", desc: "Get notified about system updates and health tips" },
-                  { title: "Appointment Updates", desc: "Real-time updates for booked appointments" }
-                ].map((pref, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
+                  { id: 'email', title: "Email Notifications", desc: "Receive appointment reminders via email" },
+                  { id: 'system', title: "System Alerts", desc: "Get notified about system updates and health tips" },
+                  { id: 'appointments', title: "Appointment Updates", desc: "Real-time updates for booked appointments" }
+                ].map((pref) => (
+                   <div key={pref.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
                     <div>
                       <p className="font-medium text-sm">{pref.title}</p>
                       <p className="text-xs text-muted-foreground">{pref.desc}</p>
                     </div>
-                    <div className="w-12 h-6 rounded-full bg-primary/20 relative cursor-pointer group">
-                      <div className="absolute right-1 top-1 w-4 h-4 rounded-full bg-primary shadow-sm group-hover:scale-110 transition-transform" />
-                    </div>
+                    <Switch 
+                      checked={(notificationPrefs as any)[pref.id]} 
+                      onCheckedChange={(checked) => setNotificationPrefs(prev => ({ ...prev, [pref.id]: checked }))}
+                    />
                   </div>
                 ))}
+                
+                <div className="flex justify-end pt-4">
+                  <Button onClick={handleProfileUpdate} disabled={loading} className="px-8 shadow-lg shadow-primary/20">
+                    {loading ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Preferences</>}
+                  </Button>
+                </div>
               </div>
             </GlassCard>
           </TabsContent>
