@@ -84,7 +84,10 @@ export default function BillingPage() {
   };
 
   return (
-    <DashboardLayout role={userProfile?.role || 'patient'} title="Billing & Invoices">
+    <DashboardLayout 
+      role={userProfile?.role || 'patient'} 
+      title={userProfile?.role === 'admin' ? "Financial Management" : "Billing & Invoices"}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -54,6 +54,7 @@ const roleNavigation = {
   ],
   admin: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/admin" },
+    { icon: Receipt, label: "Financials", href: "/admin/billing" },
     { icon: BarChart3, label: "System Analytics", href: "/admin/analytics" },
     { icon: UserCog, label: "User Management", href: "/admin/users" },
     { icon: Shield, label: "System Status", href: "/admin/status" },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Building2, Activity, Shield, TrendingUp, AlertTriangle } from "lucide-react";
+import { Users, Activity, TrendingUp, AlertTriangle, Receipt, CreditCard } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -27,6 +27,8 @@ export default function AdminDashboard() {
     totalPatients: 0,
     totalDoctors: 0,
     todayAppointments: 0,
+    totalRevenue: 0,
+    outstandingBills: 0,
     weeklyAppointments: [0, 0, 0, 0, 0, 0, 0]
   });
   const [loading, setLoading] = useState(true);
@@ -77,9 +79,28 @@ export default function AdminDashboard() {
       }
     );
 
+    // Listen to all bills for financial stats
+    const unsubBills = listenToCollection<any>(
+      'bills',
+      [],
+      (data) => {
+        const totalRevenue = data
+          .filter(b => b.status === 'paid')
+          .reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+        const outstanding = data.filter(b => b.status === 'unpaid').length;
+        
+        setStats(prev => ({ 
+          ...prev, 
+          totalRevenue,
+          outstandingBills: outstanding
+        }));
+      }
+    );
+
     return () => {
       unsubUsers();
       unsubAppointments();
+      unsubBills();
     };
   }, []);
 
@@ -97,9 +118,9 @@ export default function AdminDashboard() {
           ) : (
             <>
               <StatsCard title="Total Patients" value={stats.totalPatients.toLocaleString()} change={12} changeLabel="this month" icon={<Users className="w-5 h-5 text-primary" />} variant="primary" />
-              <StatsCard title="Active Doctors" value={stats.totalDoctors.toString()} change={3} icon={<Building2 className="w-5 h-5 text-success" />} />
+              <StatsCard title="Total Revenue" value={`${stats.totalRevenue.toLocaleString()} BDT`} icon={<Receipt className="w-5 h-5 text-success" />} />
+              <StatsCard title="Outstanding Bills" value={stats.outstandingBills.toString()} icon={<CreditCard className="w-5 h-5 text-destructive" />} />
               <StatsCard title="Appointments Today" value={stats.todayAppointments.toString()} icon={<Activity className="w-5 h-5 text-accent" />} />
-              <StatsCard title="System Health" value="99.9%" icon={<Shield className="w-5 h-5 text-success" />} />
             </>
           )}
         </div>

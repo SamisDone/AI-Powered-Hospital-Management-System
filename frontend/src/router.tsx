@@ -254,6 +254,12 @@ const adminStatusRoute = createRoute({
   component: SystemStatusPage,
 });
 
+const adminBillingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/billing',
+  component: BillingPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -285,6 +291,7 @@ const routeTree = rootRoute.addChildren([
   adminUsersRoute,
   adminAnalyticsRoute,
   adminStatusRoute,
+  adminBillingRoute,
 ]);
 
 export const router = createRouter({ routeTree });
