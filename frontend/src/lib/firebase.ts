@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC7PtMT5lmw0LT5QGpOZKZwLL0S7vHnFKA",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "medihub-d29f1.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "medihub-d29f1",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "medihub-d29f1.firebasestorage.app",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "medihub-d29f1.appspot.com",
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "761244640914",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:761244640914:web:753f640c06f6ae57dc684b"
 };

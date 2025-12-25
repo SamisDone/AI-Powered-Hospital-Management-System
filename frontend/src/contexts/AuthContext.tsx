@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { onAuthChange, setDocument, listenToDocument, logout as authLogout } from '@/lib/firebase-utils';
+import { onAuthChange, listenToDocument, logout as authLogout } from '@/lib/firebase-utils';
 import type { User } from 'firebase/auth';
 
 // Types
@@ -58,30 +58,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const unsubscribeAuth = onAuthChange(async (user) => {
       setCurrentUser(user);
-      
+
       if (user) {
         setLoading(true); // Start loading when user is detected
         // Listen to profile changes
         if (unsubProfile) unsubProfile();
-        
+
         unsubProfile = listenToDocument<UserProfile>('users', user.uid, async (profile: UserProfile | null) => {
           if (profile) {
             setUserProfile(profile);
             setLoading(false);
           } else {
-            // Create a default profile if not found
-            const defaultProfile: UserProfile = {
-              uid: user.uid,
-              email: user.email || '',
-              role: user.email === 'admin@medihub.com' ? 'admin' : 'patient',
-              firstName: '',
-              lastName: '',
-              phone: '',
-              createdAt: new Date()
-            };
-            
-            await setDocument('users', user.uid, defaultProfile);
-            // The listener will trigger again after setDocument
+            // Profile doesn't exist yet. 
+            // It might be being created by the registration page.
+            // We wait or do nothing here, letting the registration flow handle the creation.
+            // Only if we truly need a fallback (legacy users), we handles it, but for now:
+            console.log("Profile not found for user:", user.uid);
+            setLoading(false);
           }
         });
       } else {

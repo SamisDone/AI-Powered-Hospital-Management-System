@@ -1,6 +1,6 @@
-import { 
-  createRootRoute, 
-  createRoute, 
+import {
+  createRootRoute,
+  createRoute,
   createRouter,
   Outlet,
   Navigate
@@ -53,7 +53,7 @@ const rootRoute = createRootRoute({
     <ThemeProvider defaultTheme="light" storageKey="MediHub-theme">
       <AuthProvider>
         <Outlet />
-        <Toaster 
+        <Toaster
           position="top-right"
           richColors
           closeButton
@@ -200,6 +200,12 @@ const aiReportSummaryRoute = createRoute({
   component: AIReportSummaryPage,
 });
 
+const doctorAiSummaryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/doctor/ai-summary/$patientId',
+  component: AIReportSummaryPage,
+});
+
 const analyticsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/analytics',
@@ -282,6 +288,7 @@ const routeTree = rootRoute.addChildren([
   notificationsRoute,
   settingsRoute,
   aiReportSummaryRoute,
+  doctorAiSummaryRoute,
   analyticsRoute,
   reportsRoute,
   doctorAvailabilityRoute,

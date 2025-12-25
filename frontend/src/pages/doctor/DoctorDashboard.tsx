@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, FileText, Brain, CheckCircle2, Calendar } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Users, FileText, Brain, CheckCircle2, Calendar, Search } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -33,12 +33,14 @@ const getLocalDate = () => {
 };
 
 export default function DoctorDashboard() {
+  const navigate = useNavigate();
   const { currentUser, userProfile, setUserProfile } = useAuth();
   const userName = userProfile?.firstName || currentUser?.displayName || currentUser?.email?.split("@")[0] || "Doctor";
-  
+
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAvailable, setIsAvailable] = useState(userProfile?.isAvailable ?? true);
+  const [activeTab, setActiveTab] = useState<'today' | 'all'>('today');
 
   useEffect(() => {
     if (!userProfile?.uid) return;
@@ -60,11 +62,14 @@ export default function DoctorDashboard() {
   const todayAppointments = allAppointments.filter(a => a.date === today);
   const todayPending = todayAppointments.filter(a => a.status === 'scheduled' || a.status === 'in-progress');
   const todayCompleted = todayAppointments.filter(a => a.status === 'completed').length;
-  const totalPatients = new Set(allAppointments.map(a => a.patientId)).size;
+
+  // Get unique patients
+  const uniquePatients = Array.from(new Map(allAppointments.map(a => [a.patientId, a])).values());
+  const totalPatients = uniquePatients.length;
 
   const handleAvailabilityToggle = async (checked: boolean) => {
     if (!userProfile?.uid) return;
-    
+
     setIsAvailable(checked);
     try {
       await updateDocument('users', userProfile.uid, { isAvailable: checked });
@@ -101,21 +106,21 @@ export default function DoctorDashboard() {
       <div className="space-y-6">
         {/* Stats & Availability */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard 
-            title="Today's Patients" 
-            value={loading ? "..." : todayAppointments.length.toString()} 
-            icon={<Users className="w-5 h-5 text-primary" />} 
-            variant="primary" 
+          <StatsCard
+            title="Today's Patients"
+            value={loading ? "..." : todayAppointments.length.toString()}
+            icon={<Users className="w-5 h-5 text-primary" />}
+            variant="primary"
           />
-          <StatsCard 
-            title="Completed Today" 
-            value={loading ? "..." : todayCompleted.toString()} 
-            icon={<CheckCircle2 className="w-5 h-5 text-success" />} 
+          <StatsCard
+            title="Completed Today"
+            value={loading ? "..." : todayCompleted.toString()}
+            icon={<CheckCircle2 className="w-5 h-5 text-success" />}
           />
-          <StatsCard 
-            title="Total Patients" 
-            value={loading ? "..." : totalPatients.toString()} 
-            icon={<FileText className="w-5 h-5 text-accent" />} 
+          <StatsCard
+            title="Total Patients"
+            value={loading ? "..." : totalPatients.toString()}
+            icon={<FileText className="w-5 h-5 text-accent" />}
           />
           <GlassCard className="p-6 flex items-center justify-between">
             <div>
@@ -131,42 +136,66 @@ export default function DoctorDashboard() {
         {/* Patient Queue */}
         <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-semibold text-lg">Today's Queue ({todayPending.length} pending)</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="font-semibold text-lg">Patients</h3>
+              <div className="flex bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('today')}
+                  className={`px-3 py-1 text-xs rounded-md transition-all ${activeTab === 'today' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                >
+                  Today's Queue
+                </button>
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`px-3 py-1 text-xs rounded-md transition-all ${activeTab === 'all' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                >
+                  All Patients
+                </button>
+              </div>
+            </div>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/appointments">View all <Calendar className="w-4 h-4 ml-1" /></Link>
             </Button>
           </div>
+
           <div className="space-y-3">
             {loading ? (
               [...Array(3)].map((_, i) => (
                 <Skeleton key={i} className="h-20 w-full" />
               ))
-            ) : todayPending.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                {todayAppointments.length === 0 
-                  ? "No appointments scheduled for today"
-                  : "All appointments completed for today!"}
-              </p>
+            ) : (activeTab === 'today' ? todayPending : uniquePatients).length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-border/50 rounded-xl">
+                <Search className="w-12 h-12 mx-auto text-muted-foreground/20 mb-3" />
+                <p className="text-sm text-muted-foreground font-medium">
+                  {activeTab === 'today'
+                    ? (todayAppointments.length === 0 ? "No appointments scheduled for today" : "All appointments completed for today!")
+                    : "You haven't seen any patients yet"}
+                </p>
+              </div>
             ) : (
-              todayPending.map((patient) => (
-                <motion.div 
-                  key={patient.id} 
-                  initial={{ opacity: 0, y: 10 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  className="p-4 rounded-xl bg-muted/30 flex items-center justify-between"
+              (activeTab === 'today' ? todayPending : uniquePatients).map((patient) => (
+                <motion.div
+                  key={patient.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-xl bg-muted/30 flex items-center justify-between hover:bg-muted/50 transition-all cursor-pointer group"
+                  onClick={() => {
+                    console.log("Navigating to AI summary for patient:", patient.patientId);
+                    navigate({ to: '/doctor/ai-summary/$patientId', params: { patientId: patient.patientId } } as any);
+                  }}
                 >
                   <div className="flex items-center gap-4">
-                    <MedAvatar 
-                      fallback={patient.patientName} 
-                      size="md" 
-                      status={patient.status === "in-progress" ? "busy" : "online"} 
+                    <MedAvatar
+                      fallback={patient.patientName}
+                      size="md"
+                      status={patient.status === "in-progress" ? "busy" : "online"}
                     />
                     <div>
-                      <p className="font-medium">{patient.patientName}</p>
+                      <p className="font-medium group-hover:text-primary transition-colors">{patient.patientName}</p>
                       <p className="text-sm text-muted-foreground">{patient.reason || "Consultation"}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                     <span className="text-sm text-muted-foreground">{patient.time}</span>
                     {patient.status === "in-progress" ? (
                       <Button size="sm" onClick={() => handleCompleteConsultation(patient.id)} className="rounded-xl">
@@ -177,6 +206,11 @@ export default function DoctorDashboard() {
                         Start
                       </Button>
                     )}
+                    <Button size="sm" variant="ghost" className="rounded-xl text-primary" asChild>
+                      <Link to="/doctor/ai-summary/$patientId" params={{ patientId: patient.patientId }}>
+                        <Brain className="w-4 h-4 mr-1" /> AI
+                      </Link>
+                    </Button>
                   </div>
                 </motion.div>
               ))

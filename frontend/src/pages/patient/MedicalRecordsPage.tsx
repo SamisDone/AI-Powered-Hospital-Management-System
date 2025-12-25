@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { addDocument, listenToCollection, deleteDocument, uploadFile } from '@/lib/firebase-utils';
+import { addDocument, listenToCollection, deleteDocument } from '@/lib/firebase-utils';
+import { supabase } from '@/lib/supabase';
 
 interface MedicalRecord {
   id?: string;
@@ -41,7 +42,7 @@ export default function MedicalRecordsPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     type: 'report' as MedicalRecord['type'],
@@ -57,15 +58,15 @@ export default function MedicalRecordsPage() {
     if (!userProfile?.uid) return;
 
     const isAdmin = userProfile?.role === 'admin';
-    const constraints = isAdmin 
-      ? [] 
+    const constraints = isAdmin
+      ? []
       : [{ field: isDoctor ? 'doctorId' : 'patientId', operator: '==', value: userProfile.uid }];
 
     const unsubscribe = listenToCollection<MedicalRecord>(
       'medical_records',
       constraints as any,
       (data) => {
-        setRecords(data.sort((a, b) => 
+        setRecords(data.sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         ));
         setLoading(false);
@@ -86,29 +87,42 @@ export default function MedicalRecordsPage() {
 
     setUploading(true);
     try {
-      const path = `medical_records/${userProfile.uid}/${Date.now()}_${file.name}`;
-      const uploadResult = await uploadFile(file, path);
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${userProfile.uid}/${Date.now()}_${sanitizedFileName}`;
+      const { data, error } = await supabase.storage
+        .from('medical_records')
+        .upload(fileName, file);
 
-      if (uploadResult.success && uploadResult.data) {
+      if (error) {
+        toast.error('Failed to upload file: ' + error.message);
+        setUploading(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('medical_records')
+        .getPublicUrl(data.path);
+
+      if (data && publicUrl) {
         const record: Omit<MedicalRecord, 'id'> = {
           patientId: userProfile.uid,
           patientName: `${userProfile.firstName} ${userProfile.lastName}`,
           title: formData.title,
           type: formData.type,
-          fileUrl: uploadResult.data.url,
+          fileUrl: publicUrl,
           fileName: file.name,
           date: new Date().toISOString().split('T')[0],
           notes: formData.notes
         };
 
         const result = await addDocument('medical_records', record);
-        
+
         if (result.success) {
           toast.success('Record uploaded successfully!');
           setFormData({ title: '', type: 'report', notes: '' });
         }
       } else {
-        toast.error('Failed to upload file');
+        toast.error('Failed to get public URL');
       }
     } catch {
       toast.error('An error occurred');
@@ -132,9 +146,9 @@ export default function MedicalRecordsPage() {
   };
 
   const filteredRecords = records.filter(record => {
-    const matchesSearch = record.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          record.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          record.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      record.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'all' || record.type === typeFilter;
     return matchesSearch && matchesType;
   });
@@ -224,8 +238,8 @@ export default function MedicalRecordsPage() {
                   className="hidden"
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                 />
-                <Button 
-                  onClick={() => fileInputRef.current?.click()} 
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || !formData.title}
                   className="w-full"
                 >
@@ -250,9 +264,9 @@ export default function MedicalRecordsPage() {
               <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No medical records found</h3>
               <p className="text-muted-foreground">
-                {searchTerm || typeFilter !== 'all' 
+                {searchTerm || typeFilter !== 'all'
                   ? "Try adjusting your search or filters"
-                  : isDoctor 
+                  : isDoctor
                     ? "No patient records to display"
                     : "Upload your first medical record to get started"}
               </p>
@@ -302,9 +316,9 @@ export default function MedicalRecordsPage() {
                       </a>
                     </Button>
                     {!isDoctor && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         className="text-destructive hover:text-destructive"
                         onClick={() => record.id && handleDelete(record.id)}
                       >

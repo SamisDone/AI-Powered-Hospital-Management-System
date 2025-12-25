@@ -23,7 +23,7 @@ export function DashboardLayout({ children, role, title }: DashboardLayoutProps)
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar role={role} />
-      
+
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
         <header className="h-16 glass-subtle border-b border-border/30 flex items-center justify-between px-6">
@@ -55,7 +55,7 @@ export function DashboardLayout({ children, role, title }: DashboardLayoutProps)
         </header>
 
         {/* Main content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 overflow-y-auto relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

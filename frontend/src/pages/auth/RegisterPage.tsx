@@ -14,8 +14,8 @@ import { signUp, setDocument } from '@/lib/firebase-utils';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: "easeOut" as const }
   }
@@ -67,26 +67,26 @@ export default function RegisterPage() {
 
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
-    
+
     if (!formData.firstName) newErrors.firstName = 'First name is required';
     if (!formData.lastName) newErrors.lastName = 'Last name is required';
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     if (!formData.phone) {
       newErrors.phone = 'Phone number is required';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
@@ -95,26 +95,34 @@ export default function RegisterPage() {
       if (!formData.specialization) newErrors.specialization = 'Specialization is required';
       if (!formData.licenseNumber) newErrors.licenseNumber = 'License number is required';
     }
-    
+
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      console.log("Validation errors:", newErrors);
+      toast.error("Please fix the errors in the form");
+    }
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
+    console.log("Starting registration process...", formData);
 
     try {
+      console.log("Attempting sign up with email:", formData.email);
       const result = await signUp(formData.email, formData.password);
-      
+
       if (result.success && result.data) {
         const user = result.data;
-        
+        console.log("User created successfully:", user.uid);
+
         // Create user profile in Firestore
-        await setDocument('users', user.uid, {
+        console.log("Creating user profile in Firestore...");
+        const profileData = {
           uid: user.uid,
           email: formData.email,
           firstName: formData.firstName,
@@ -126,22 +134,40 @@ export default function RegisterPage() {
             licenseNumber: formData.licenseNumber
           }),
           createdAt: new Date()
-        });
+        };
+
+        try {
+          await setDocument('users', user.uid, profileData);
+          console.log("User profile created successfully");
+        } catch (dbError) {
+          console.error("Failed to create user profile:", dbError);
+          toast.error("Account created but failed to save profile. Please contact support.");
+          // Don't return, tried to proceed or user is in bad state
+        }
 
         // Send verification email
-        await sendEmailVerification(user, {
-          url: `${window.location.origin}/login`
-        });
+        console.log("Sending verification email...");
+        try {
+          await sendEmailVerification(user, {
+            url: `${window.location.origin}/login`
+          });
+          console.log("Verification email sent");
+        } catch (emailError) {
+          console.error("Failed to send verification email:", emailError);
+          // Not critical for account creation, but annoying
+        }
 
         toast.success('Account created! Please verify your email.');
         navigate({ to: '/verify-email' });
       } else {
+        console.error("Sign up failed:", result.error);
         const errorMsg = result.error?.includes('email-already-in-use')
           ? 'An account with this email already exists'
           : result.error || 'Failed to create account';
         toast.error(errorMsg);
       }
-    } catch {
+    } catch (error) {
+      console.error("Unexpected error during registration:", error);
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -184,11 +210,10 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, role: 'patient' }))}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                        formData.role === 'patient' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${formData.role === 'patient'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                        }`}
                     >
                       <User className={`w-6 h-6 ${formData.role === 'patient' ? 'text-primary' : 'text-muted-foreground'}`} />
                       <span className={`font-medium ${formData.role === 'patient' ? 'text-primary' : ''}`}>Patient</span>
@@ -196,11 +221,10 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, role: 'doctor' }))}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                        formData.role === 'doctor' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${formData.role === 'doctor'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                        }`}
                     >
                       <Stethoscope className={`w-6 h-6 ${formData.role === 'doctor' ? 'text-primary' : 'text-muted-foreground'}`} />
                       <span className={`font-medium ${formData.role === 'doctor' ? 'text-primary' : ''}`}>Doctor</span>
@@ -282,7 +306,7 @@ export default function RegisterPage() {
                 {/* Doctor-specific fields */}
                 {formData.role === 'doctor' && (
                   <>
-                    <motion.div variants={fadeIn} className="space-y-2">
+                    <motion.div variants={fadeIn} animate="visible" className="space-y-2">
                       <Label htmlFor="specialization">Specialization</Label>
                       <Input
                         id="specialization"
@@ -295,7 +319,7 @@ export default function RegisterPage() {
                       />
                       {errors.specialization && <p className="text-xs text-destructive">{errors.specialization}</p>}
                     </motion.div>
-                    <motion.div variants={fadeIn} className="space-y-2">
+                    <motion.div variants={fadeIn} animate="visible" className="space-y-2">
                       <Label htmlFor="licenseNumber">License Number</Label>
                       <Input
                         id="licenseNumber"
@@ -347,11 +371,11 @@ export default function RegisterPage() {
                 </motion.div>
 
                 <motion.div variants={fadeIn}>
-                  <Button 
-                    type="submit" 
-                    variant="gradient" 
-                    size="lg" 
-                    className="w-full" 
+                  <Button
+                    type="submit"
+                    variant="gradient"
+                    size="lg"
+                    className="w-full"
                     disabled={loading}
                   >
                     {loading ? (
@@ -388,7 +412,7 @@ export default function RegisterPage() {
           <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         </div>
-        
+
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <motion.div
             initial="hidden"
@@ -401,15 +425,15 @@ export default function RegisterPage() {
               </div>
               <span className="text-3xl font-bold">MediHub</span>
             </motion.div>
-            
+
             <motion.h1 variants={fadeIn} className="text-5xl font-bold mb-6 leading-tight">
               Start Your <br />Health Journey
             </motion.h1>
-            
+
             <motion.p variants={fadeIn} className="text-xl opacity-90 mb-8">
               Create your account today and gain access to world-class healthcare services at your fingertips.
             </motion.p>
-            
+
             <motion.div variants={fadeIn} className="space-y-4">
               {[
                 "Access 500+ verified doctors",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, XCircle, Search, Plus, Pill } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, XCircle, Search, Plus, Pill, Brain } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
@@ -87,11 +87,11 @@ export default function AppointmentsPage() {
 
     try {
       await updateDocument('appointments', id, { status: 'cancelled' });
-      
+
       // Create notification for the OTHER party
       const recipientId = isDoctor ? appointment.patientId : appointment.doctorId;
       const cancelerName = isDoctor ? `Dr. ${userProfile.firstName} ${userProfile.lastName}` : `${userProfile.firstName} ${userProfile.lastName}`;
-      
+
       await addDocument('notifications', {
         userId: recipientId,
         title: 'Appointment Cancelled',
@@ -113,7 +113,7 @@ export default function AppointmentsPage() {
 
     try {
       await updateDocument('appointments', id, { status: 'completed' });
-      
+
       // Notify patient
       await addDocument('notifications', {
         userId: appointment.patientId,
@@ -131,7 +131,7 @@ export default function AppointmentsPage() {
 
   const filteredAppointments = appointments.filter(a => {
     const matchesFilter = filter === 'all' || a.status === filter;
-    const matchesSearch = 
+    const matchesSearch =
       a.doctorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.reason?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -213,9 +213,9 @@ export default function AppointmentsPage() {
                 <Calendar className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No appointments</h3>
                 <p className="text-muted-foreground mb-4">
-                  {filter !== 'all' 
+                  {filter !== 'all'
                     ? `No ${filter} appointments found`
-                    : isDoctor 
+                    : isDoctor
                       ? "You don't have any appointments scheduled"
                       : "Book your first appointment with a doctor"}
                 </p>
@@ -237,7 +237,7 @@ export default function AppointmentsPage() {
                 const canCancel = appointment.status === 'scheduled' && !isAdmin;
                 const canComplete = isDoctor && appointment.status === 'scheduled';
                 const canPrescribe = isDoctor && appointment.status === 'completed';
-                
+
                 return (
                   <motion.div
                     key={appointment.id}
@@ -255,7 +255,7 @@ export default function AppointmentsPage() {
                             <div>
                               <h3 className="font-semibold">
                                 {isDoctor || isAdmin
-                                  ? appointment.patientName 
+                                  ? appointment.patientName
                                   : appointment.doctorName}
                               </h3>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -270,14 +270,26 @@ export default function AppointmentsPage() {
                               <StatusIcon className="w-3 h-3 mr-1" />
                               {status.label}
                             </Badge>
+                            {isDoctor && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-primary hover:bg-primary/10 rounded-xl"
+                                asChild
+                              >
+                                <Link to="/doctor/ai-summary/$patientId" params={{ patientId: appointment.patientId }}>
+                                  <Brain className="w-4 h-4 mr-1" /> AI
+                                </Link>
+                              </Button>
+                            )}
                             {canComplete && (
                               <Button size="sm" onClick={() => handleComplete(appointment.id)}>
                                 Complete
                               </Button>
                             )}
                             {canCancel && (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 className="text-destructive hover:text-destructive"
                                 onClick={() => handleCancel(appointment.id)}
@@ -286,17 +298,17 @@ export default function AppointmentsPage() {
                               </Button>
                             )}
                             {canPrescribe && (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 className="text-primary"
                                 asChild
                               >
-                                <Link 
+                                <Link
                                   to="/prescriptions"
-                                  search={{ 
-                                    patientId: appointment.patientId, 
-                                    patientName: appointment.patientName || '' 
+                                  search={{
+                                    patientId: appointment.patientId,
+                                    patientName: appointment.patientName || ''
                                   }}
                                 >
                                   <Pill className="w-4 h-4 mr-1" />
