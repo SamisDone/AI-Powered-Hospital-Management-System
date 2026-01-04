@@ -1,16 +1,26 @@
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Try to load .env from current dir and parent dir
+dotenv.config(); // Default
+dotenv.config({ path: path.resolve(__dirname, '../.env') }); 
 
 const app = express();
 const PORT = 3001;
 
 // Initialize Gemini
 const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
+console.log(`🔑 Debug: GEMINI_API_KEY present: ${!!process.env.GEMINI_API_KEY}`);
+console.log(`🔑 Debug: VITE_GEMINI_API_KEY present: ${!!process.env.VITE_GEMINI_API_KEY}`);
+
+const genAI = new GoogleGenerativeAI(apiKey || "");
 
 const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 app.use(cors({
@@ -46,8 +56,8 @@ async function generateWithFallback(modelNames, content) {
     throw lastError;
 }
 
-const MODAL_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest"];
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-pro"];
+const MODAL_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash"];
+const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash-exp"];
 
 // Image analysis endpoint using Gemini
 app.post('/api/huggingface/caption', express.raw({ type: 'application/octet-stream', limit: '10mb' }), async (req, res) => {
@@ -98,5 +108,5 @@ app.post('/api/huggingface/generate', express.json(), async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 AI Proxy Server running on http://localhost:${PORT}`);
     console.log(`✅ CORS enabled for ${allowedOrigins.join(', ')}`);
-    console.log(`🔑 Gemini API Key configured: ${apiKey ? 'Yes' : 'No'}`);
+    console.log(`🔑 Gemini API Key configured: ${apiKey ? 'Yes (' + apiKey.substring(0, 5) + '...)' : 'No'}`);
 });

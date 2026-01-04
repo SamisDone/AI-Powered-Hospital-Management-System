@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - allow reading doctors publicly, own profile always
+    match /users/{userId} {
+      // Anyone authenticated can read doctor profiles
+      // Users can always read their own profile
+      allow read: if request.auth != null && 
+        (resource.data.role == 'doctor' || 
+         resource.data.role == 'admin' ||
+         request.auth.uid == userId);
+      
+      // Users can only write to their own profile
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read and write all users
+      allow read, write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Appointments - users can read/write their own appointments
+    match /appointments/{docId} {
+      allow read: if request.auth != null && 
+        (resource.data.patientId == request.auth.uid || 
+         resource.data.doctorId == request.auth.uid);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && 
+        (resource.data.patientId == request.auth.uid || 
+         resource.data.doctorId == request.auth.uid);
+    }
+    
+    // Availability - anyone can read, only doctors can write their own
+    match /availability/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        request.resource.data.doctorId == request.auth.uid;
+    }
+    
+    // Prescriptions - patients and doctors can access their own
+    match /prescriptions/{docId} {
+      allow read: if request.auth != null && 
+        (resource.data.patientId == request.auth.uid || 
+         resource.data.doctorId == request.auth.uid);
+      allow write: if request.auth != null;
+    }
+    
+    // Medical records - patients own their records
+    match /medical_records/{docId} {
+      allow read, write: if request.auth != null && 
+        resource.data.patientId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Bills - patients and admins can access
+    match /bills/{docId} {
+      allow read: if request.auth != null && 
+        resource.data.patientId == request.auth.uid;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+    }
+    
+    // Notifications - users can read/write their own
+    match /notifications/{docId} {
+      allow read, write: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+    
+    // Test bookings
+    match /test_bookings/{docId} {
+      allow read, write: if request.auth != null && 
+        resource.data.patientId == request.auth.uid;
+      allow create: if request.auth != null;
+    }
+  }
+}

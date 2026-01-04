@@ -1,50 +1,51 @@
-# MediHub - AI-Powered Hospital Management System
+# National Hospital Chittagong - AI-Powered Management System
 
-MediHub is a comprehensive, modern healthcare platform designed to streamline the interaction between patients, doctors, and administrators using real-time data and AI-powered insights.
+National Hospital Chittagong (NHC) is a comprehensive, modern healthcare platform designed to streamline the interaction between patients, doctors, and administrators using real-time data and advanced AI-powered insights.
 
 ## 🚀 Key Features
 
 ### 👤 Patient Dashboard
 
-- **Real-time Appointments**: View scheduled and in-progress consultations.
-- **Digital Prescriptions**: Access medication history and test results instantly.
-- **Medical Records**: Upload and manage health documents securely (Firebase Storage).
-- **AI Health Insights**: Personalized health recommendations based on patient data.
-- **Doctor Discovery**: Search and book appointments with specialized doctors.
+- **Real-time Appointments**: View scheduled and in-progress consultations with local timezone precision.
+- **Digital Prescriptions**: Access medication history and diagnostic test results instantly.
+- **AI Report Genius**: Upload medical records for instant analysis powered by **Gemini 2.5**.
+- **Medical Records**: Securely upload and manage health documents via Firebase.
+- **Doctor Discovery**: Search and book appointments with specialized doctors at NHC.
 
 ### 🩺 Doctor Dashboard
 
-- **Patient Queue**: Real-time management of daily appointments using local timezone logic.
+- **Patient Queue**: Real-time management of daily appointments with live status updates.
 - **Enhanced Prescriptions**: Add multiple medications and diagnostic tests per visit.
-- **Consultation Management**: Transition appointments from 'scheduled' to 'in-progress' and 'completed'.
+- **Doctor Attribution**: Automated doctor name tracking on all prescriptions and test orders.
 - **Availability Control**: Manage working hours and consultation slots dynamically.
 
 ### 🛡️ Admin Panel
 
-- **Omniscient Monitoring**: Global visibility into all appointments, medical records, and prescriptions across the network.
-- **Universal Billing Controls**: Manage payment statuses and financial oversight for all patient transactions.
-- **Global Analytics**: High-level monitoring of system growth, activity peaks, and departmental performance.
-- **System Health**: Real-time status tracking of cloud infrastructure, resource usage, and record integrity.
+- **Financial Oversight**: Global visibility into billing and payment statuses across the network.
+- **System Analytics**: High-level monitoring of growth, activity peaks, and departmental performance.
 - **User Management**: Unified portal to manage roles, permissions, and account statuses.
+- **System Status**: Real-time health monitoring of database and infrastructure.
 
 ### ⚙️ Platform Features
 
-- **Real-Time Sync**: Powered by Firebase Firestore for instant data reflection across all devices.
-- **Local Timezone Precision**: All scheduling and statistical calculations respect the user's local time.
-- **Secure Authentication**: Robust role-based access control via Firebase Auth.
-- **Notification System**: Instant alerts for appointment updates and prescriptions.
-- **Profile Customization**: Manage personal details, specialization, and avatars.
+- **Gemini 2.5 Integration**: Advanced AI medical analysis using the latest Flash and Pro models.
+- **Real-Time Sync**: Powered by Firebase Firestore for instant data reflection.
+- **Premium UI/UX**: Modern dark-mode aesthetic with fluid animations and dynamic theme toggling.
+- **Unified Branding**: Professional hospital branding across all pages, reports, and PDF invoices.
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React, TypeScript, Vite
-- **Styling**: Tailwind CSS, Framer Motion (animations), Shadcn UI
-- **Backend**: Firebase (Authentication, Firestore, Storage)
-- **Icons**: Lucide React
-- **Notifications**: Sonner
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS (v4)
+- **Animations**: Framer Motion
+- **AI Engine**: Google Gemini 2.5 (via secure Node.js proxy)
+- **Backend**: Firebase (Auth, Firestore, Storage)
+- **PDF Engine**: @react-pdf/renderer
 
 ## 📖 How to Run
 
-1. Install dependencies: `npm install`
-2. Configure Firebase: Set up your `.env` with Firebase credentials.
-3. Start development server: `npm run dev`
+1. **Install Dependencies**: `npm install`
+2. **Setup Proxy**: `cd server && npm install`
+3. **Configure Environment**: Set up your `.env` in the `frontend` directory with Firebase and Gemini keys.
+4. **Start Application**:
+   - Frontend: `npm run dev`
+   - AI Proxy: `node server/proxy.js`

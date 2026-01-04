@@ -24,6 +24,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'patient' | 'doctor' | 'admin'>('all');
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = listenToCollection<UserProfile>(
@@ -38,11 +39,14 @@ export default function AdminUsersPage() {
   }, []);
 
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
+    setProcessingId(userId);
     try {
       await updateDocument('users', userId, { isActive: !currentStatus });
       toast.success(currentStatus ? 'User deactivated' : 'User activated');
     } catch {
       toast.error('Failed to update user');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -196,12 +200,20 @@ export default function AdminUsersPage() {
                           {role.label}
                         </Badge>
                         {user.role !== 'admin' && (
-                          <Button
+                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleToggleActive(user.uid, isActive)}
+                            disabled={processingId === user.uid}
                           >
-                            {isActive ? (
+                            {processingId === user.uid ? (
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              >
+                                <Shield className="w-4 h-4" />
+                              </motion.div>
+                            ) : isActive ? (
                               <>
                                 <UserX className="w-4 h-4 mr-1" />
                                 Deactivate

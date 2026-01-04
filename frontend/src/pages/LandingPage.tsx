@@ -51,52 +51,52 @@ const staggerItem = {
 const features = [
   {
     icon: Brain,
-    title: "AI-Powered Diagnosis",
-    description: "Advanced symptom analysis with intelligent recommendations powered by medical AI.",
+    title: "Gastroenterology",
+    description: "Expert care for digestive system and liver disorders by top specialists.",
     color: "primary",
   },
   {
     icon: Calendar,
-    title: "Smart Scheduling",
-    description: "Automated appointment booking with intelligent doctor matching and availability.",
+    title: "Cardiology",
+    description: "Comprehensive heart care including diagnostic and therapeutic services.",
     color: "accent",
   },
   {
     icon: Shield,
-    title: "Secure Health Records",
-    description: "End-to-end encrypted medical records with instant access across all devices.",
+    title: "Neurology",
+    description: "Advanced treatment for disorders of the brain, spinal cord, and nerves.",
     color: "success",
   },
   {
     icon: Stethoscope,
-    title: "Doctor Matching",
-    description: "AI finds the perfect specialist based on your symptoms and preferences.",
+    title: "Pediatrics",
+    description: "Skilled child specialists diagnosing and treating multi-tier pediatric health needs.",
     color: "primary",
   },
   {
     icon: BarChart3,
-    title: "Health Analytics",
-    description: "Comprehensive health tracking with personalized insights and trends.",
+    title: "Diagnostic Excellence",
+    description: "State-of-the-art pathology, CT-SCAN, MRI, and real-time PCR testing.",
     color: "accent",
   },
   {
     icon: Zap,
-    title: "Instant Results",
-    description: "Real-time lab results and report summaries powered by AI analysis.",
+    title: "24/7 Emergency",
+    description: "Round-the-clock emergency care, ambulance services, and life support.",
     color: "success",
   },
 ];
 
 const stats = [
-  { value: "50K+", label: "Active Patients" },
-  { value: "2,500+", label: "Healthcare Providers" },
-  { value: "98%", label: "Patient Satisfaction" },
-  { value: "24/7", label: "AI Support" },
+  { value: "Established", label: "Since 1996" },
+  { value: "1,700+", label: "Total Services" },
+  { value: "250,000+", label: "Happy Patients" },
+  { value: "24/7", label: "Care & Support" },
 ];
 
 const testimonials = [
   {
-    content: "MediHub AI has transformed how we manage patient care. The AI insights have been invaluable.",
+    content: "National Hospital Chittagong has transformed how we manage patient care. The AI insights have been invaluable.",
     author: "Dr. Sarah Chen",
     role: "Chief of Cardiology",
     hospital: "Metro Health Center",
@@ -177,18 +177,22 @@ export default function LandingPage() {
                 </motion.div>
                 <motion.h1 
                   variants={staggerItem}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight"
+                  className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight"
                 >
-                  Healthcare,{" "}
-                  <span className="text-gradient-primary">Reimagined</span>{" "}
-                  with AI
+                  National Hospital <span className="text-gradient-primary">Chittagong</span>
                 </motion.h1>
+                <motion.h2
+                  variants={staggerItem}
+                  className="text-2xl sm:text-3xl font-semibold text-muted-foreground mt-2"
+                >
+                  Healthcare, Reimagined with AI
+                </motion.h2>
                 <motion.p 
                   variants={staggerItem}
                   className="text-lg text-muted-foreground max-w-xl"
                 >
-                  Experience the future of healthcare management. Our AI-powered platform 
-                  connects patients, doctors, and administrators seamlessly for better outcomes.
+                  "Putting Patients First" is our way of life. Experience the future of healthcare 
+                  at National Hospital & Diagnostic Ltd. Chittagong, powered by advanced AI solutions.
                 </motion.p>
               </div>
 
@@ -238,7 +242,7 @@ export default function LandingPage() {
               >
                 <img
                   src={heroImage}
-                  alt="MediHub AI Dashboard"
+                  alt="National Hospital Chittagong Dashboard"
                   className="w-full h-auto"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent" />
@@ -451,8 +455,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-24 bg-muted/20 overflow-hidden">
+      {/* How It Works - About NH */}
+      <section id="about" className="py-24 bg-muted/20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -646,7 +650,7 @@ export default function LandingPage() {
                 variants={staggerItem}
                 className="text-white/80 text-lg max-w-2xl mx-auto"
               >
-                Join thousands of healthcare providers and patients already using MediHub AI 
+                Join thousands of healthcare providers and patients already using National Hospital 
                 to improve health outcomes.
               </motion.p>
               <motion.div 

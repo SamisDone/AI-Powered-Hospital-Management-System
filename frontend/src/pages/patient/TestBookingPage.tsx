@@ -12,15 +12,10 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { addDocument, listenToCollection } from '@/lib/firebase-utils';
-import { seedTestsCollection } from '@/lib/seed-data';
+import { MEDICAL_TESTS_CATALOG, type TestCatalogItem } from '@/lib/tests-catalog';
 
-interface TestItem {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-}
+// Use TestCatalogItem from the catalog
+type TestItem = TestCatalogItem;
 
 export default function TestBookingPage() {
   const { userProfile } = useAuth();
@@ -35,27 +30,10 @@ export default function TestBookingPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
-    let unsubTests: () => void;
-    
-    const init = async () => {
-      console.log('Initializing TestBookingPage...');
-      // Seed if empty or missing new catalog items
-      await seedTestsCollection();
-      
-      // 1. Listen to available tests
-      unsubTests = listenToCollection<TestItem>(
-        'available_tests',
-        [],
-        (data) => {
-          console.log(`Loaded ${data.length} available tests from Firestore`);
-          setAvailableTests(data);
-          setLoadingTests(false);
-        }
-      );
-    };
-
-    init();
-    return () => unsubTests && unsubTests();
+    console.log('Initializing TestBookingPage with local catalog...');
+    // Use local catalog instead of Firestore
+    setAvailableTests(MEDICAL_TESTS_CATALOG);
+    setLoadingTests(false);
   }, []);
 
   useEffect(() => {

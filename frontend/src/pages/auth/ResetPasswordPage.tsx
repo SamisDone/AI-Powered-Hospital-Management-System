@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
             <Heart className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold gradient-text">MediHub</span>
+          <span className="text-2xl font-bold gradient-text">National Hospital</span>
         </div>
 
         <Card className="border-0 shadow-2xl">

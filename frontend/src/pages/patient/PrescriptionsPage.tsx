@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { addDocument, listenToCollection, updateDocument } from '@/lib/firebase-utils';
-import { seedTestsCollection } from '@/lib/seed-data';
+import { MEDICAL_TESTS_CATALOG, type TestCatalogItem } from '@/lib/tests-catalog';
 
 interface Medication {
   name: string;
@@ -67,40 +67,14 @@ export default function PrescriptionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [patients, setPatients] = useState<{id: string, name: string}[]>([]);
-  const [availableTests, setAvailableTests] = useState<{id: string, name: string, category: string}[]>([]);
+  const [availableTests] = useState<TestCatalogItem[]>(MEDICAL_TESTS_CATALOG);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'completed'>('all');
   
   const urlPatientId = search.patientId;
   const urlPatientName = search.patientName;
 
-  useEffect(() => {
-    const init = async () => {
-      // Seed if catalog is incomplete
-      await seedTestsCollection();
-      
-      // Fetch available tests for the searchable dropdown
-      const unsub = listenToCollection<any>(
-        'available_tests',
-        [],
-        (data) => {
-          setAvailableTests(data.map(t => ({ 
-            id: t.id, 
-            name: t.name, 
-            category: t.category || 'General' 
-          })));
-        }
-      );
-      return unsub;
-    };
-
-    let unsub: () => void;
-    init().then(cleanup => {
-      if (cleanup) unsub = cleanup;
-    });
-
-    return () => unsub && unsub();
-  }, []);
+  // Tests are now loaded from local catalog (MEDICAL_TESTS_CATALOG)
   
   const [formData, setFormData] = useState({
     patientId: urlPatientId || '',

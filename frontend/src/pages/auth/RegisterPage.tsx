@@ -51,7 +51,7 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'patient'
+    role: 'patient' // Default to patient for better UX
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -68,6 +68,10 @@ export default function RegisterPage() {
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
+    if (!formData.role) {
+      toast.error("Please select whether you are a Patient or a Doctor");
+      return false;
+    }
     if (!formData.firstName) newErrors.firstName = 'First name is required';
     if (!formData.lastName) newErrors.lastName = 'Last name is required';
 
@@ -129,20 +133,27 @@ export default function RegisterPage() {
           lastName: formData.lastName,
           phone: formData.phone,
           role: formData.role,
+          isActive: true,
+          isAvailable: true,
           ...(formData.role === 'doctor' && {
             specialization: formData.specialization,
-            licenseNumber: formData.licenseNumber
+            licenseNumber: formData.licenseNumber,
+            consultationFee: 500, // Initial default
+            experience: "5"      // Initial default
           }),
           createdAt: new Date()
         };
 
+        console.log("FINAL PROFILE DATA TO BE SAVED:", JSON.stringify(profileData, null, 2));
+
         try {
           await setDocument('users', user.uid, profileData);
-          console.log("User profile created successfully");
+          console.log("User profile created successfully in Firestore");
         } catch (dbError) {
-          console.error("Failed to create user profile:", dbError);
-          toast.error("Account created but failed to save profile. Please contact support.");
-          // Don't return, tried to proceed or user is in bad state
+          console.error("CRITICAL: Failed to create user profile in Firestore:", dbError);
+          toast.error("Account creation failed at profile stage. Please try again.");
+          setLoading(false);
+          return; // STOP HERE
         }
 
         // Send verification email
@@ -189,7 +200,7 @@ export default function RegisterPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold gradient-text">MediHub</span>
+            <span className="text-2xl font-bold gradient-text">National Hospital</span>
           </motion.div>
 
           <Card className="border-0 shadow-2xl">
@@ -197,7 +208,7 @@ export default function RegisterPage() {
               <motion.div variants={fadeIn}>
                 <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
                 <CardDescription className="text-base">
-                  Join MediHub to access quality healthcare
+                  Join National Hospital to access quality healthcare
                 </CardDescription>
               </motion.div>
             </CardHeader>
@@ -423,7 +434,7 @@ export default function RegisterPage() {
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <Heart className="w-7 h-7" />
               </div>
-              <span className="text-3xl font-bold">MediHub</span>
+              <span className="text-3xl font-bold">National Hospital</span>
             </motion.div>
 
             <motion.h1 variants={fadeIn} className="text-5xl font-bold mb-6 leading-tight">

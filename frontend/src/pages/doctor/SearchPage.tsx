@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
-import { Search, Filter, Stethoscope, Star, Clock } from 'lucide-react';
+import { Search, Filter, Stethoscope, Clock } from 'lucide-react';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,22 +25,27 @@ export default function DoctorSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    console.log("Doctor Search - Initiating search with filter: role == doctor");
     const unsubscribe = listenToCollection<UserProfile>(
       'users',
       [{ field: 'role', operator: '==', value: 'doctor' }],
       (data: UserProfile[]) => {
-        setDoctors(data);
+        console.log("Doctor Search - Received doctors data:", data);
+        // Additional client-side check to be safe
+        const validDoctors = data.filter(u => u.role === 'doctor');
+        setDoctors(validDoctors);
         setLoading(false);
       }
     );
     return () => unsubscribe();
   }, []);
 
-  const filteredDoctors = doctors.filter(doctor => 
-    `${doctor.firstName} ${doctor.lastName} ${doctor.specialization || ''}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const filteredDoctors = doctors.filter(doctor => {
+    const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.toLowerCase();
+    const specialization = (doctor.specialization || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return fullName.includes(search) || specialization.includes(search);
+  });
 
   return (
     <DashboardLayout role={userProfile?.role || 'patient'} title="Find Doctors">
@@ -126,11 +131,8 @@ export default function DoctorSearchPage() {
                             {doctor.specialization || 'General'}
                           </Badge>
                           <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
-                            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                            <span>4.8</span>
-                            <span className="mx-1">•</span>
                             <Clock className="w-4 h-4" />
-                            <span>{doctor.experience || '5'}+ yrs</span>
+                            <span>{doctor.experience || '5'}+ years experience</span>
                           </div>
                         </div>
                       </div>
@@ -138,7 +140,7 @@ export default function DoctorSearchPage() {
                       <div className="mt-4 pt-4 border-t flex items-center justify-between">
                         <div className="text-sm">
                           <span className="text-muted-foreground">Fee: </span>
-                          <span className="font-semibold">${doctor.consultationFee || '50'}</span>
+                          <span className="font-semibold">{doctor.consultationFee || '500'} BDT</span>
                         </div>
                         <Link to="/doctor/$doctorId/slots" params={{ doctorId: doctor.uid }}>
                           <Button size="sm" variant="gradient">

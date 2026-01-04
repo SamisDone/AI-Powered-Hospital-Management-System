@@ -39,31 +39,46 @@ export function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-xl text-foreground">
-                  MediHub
+                  NH Chittagong
                 </span>
-                <span className="text-[10px] font-medium text-primary tracking-widest">
-                  AI POWERED
+                <span className="text-[10px] font-medium text-primary tracking-widest uppercase">
+                  National Hospital
                 </span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className={cn(
-                    "text-sm font-medium transition-colors relative group",
-                    currentPath === link.href
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isHash = link.href.startsWith("#");
+                return isHash ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className={cn(
+                      "text-sm font-medium transition-colors relative group",
+                      "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {link.label}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                  </a>
+                ) : (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className={cn(
+                      "text-sm font-medium transition-colors relative group",
+                      currentPath === link.href
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {link.label}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                  </Link>
+                );
+              })}
             </div>
 
             {/* CTA Buttons */}
@@ -111,22 +126,35 @@ export function Navbar() {
                 className="md:hidden mt-4 pt-4 border-t border-border/50"
               >
                 <div className="flex flex-col gap-3">
-                  {navLinks.map((link, index) => (
-                    <motion.div
-                      key={link.label}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <Link
-                        to={link.href}
-                        className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                        onClick={() => setIsOpen(false)}
+                  {navLinks.map((link, index) => {
+                    const isHash = link.href.startsWith("#");
+                    return (
+                      <motion.div
+                        key={link.label}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
                       >
-                        {link.label}
-                      </Link>
-                    </motion.div>
-                  ))}
+                        {isHash ? (
+                          <a
+                            href={link.href}
+                            className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link
+                            to={link.href}
+                            className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            {link.label}
+                          </Link>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                   <div className="flex flex-col gap-2 pt-4">
                     {currentUser ? (
                       <Button asChild className="w-full bg-gradient-to-r from-primary to-primary/80">

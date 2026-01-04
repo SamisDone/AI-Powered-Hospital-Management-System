@@ -19,7 +19,6 @@ import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import ProfilePage from '@/pages/ProfilePage';
 import NotificationsPage from '@/pages/NotificationsPage';
 import SettingsPage from '@/pages/SettingsPage';
-import AnalyticsPage from '@/pages/AnalyticsPage';
 import AIReportSummaryPage from '@/pages/AIReportSummaryPage';
 
 // Dashboards
@@ -50,7 +49,7 @@ import BillingPage from '@/pages/patient/BillingPage';
 // Root Route
 const rootRoute = createRootRoute({
   component: () => (
-    <ThemeProvider defaultTheme="light" storageKey="MediHub-theme">
+    <ThemeProvider defaultTheme="light" storageKey="NationalHospital-theme">
       <AuthProvider>
         <Outlet />
         <Toaster
@@ -102,30 +101,65 @@ const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
   component: () => {
-    const { userProfile, loading } = useAuth();
+    const { userProfile, loading, currentUser } = useAuth();
     if (loading) return <FullPageLoader />;
+    
     if (userProfile?.role === 'admin') return <Navigate to="/dashboard/admin" replace />;
     if (userProfile?.role === 'doctor') return <Navigate to="/dashboard/doctor" replace />;
-    return <Navigate to="/dashboard/patient" replace />;
+    if (userProfile?.role === 'patient') return <Navigate to="/dashboard/patient" replace />;
+    
+    // If we have a user but no profile yet, or unknown role
+    if (currentUser) {
+      console.warn("Dashboard redirect: User logged in but no valid profile found yet.");
+      // If we don't have a profile yet, maybe just wait or show error
+      return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Initializing profile...</div>;
+    }
+    
+    return <Navigate to="/login" replace />;
   },
 });
 
 const patientDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard/patient',
-  component: PatientDashboard,
+  component: () => {
+    const { userProfile, loading } = useAuth();
+    if (loading) return <FullPageLoader />;
+    if (!userProfile) return <Navigate to="/login" replace />;
+    // Allow patients and recovered accounts
+    if (userProfile.role !== 'patient') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <PatientDashboard />;
+  },
 });
 
 const doctorDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard/doctor',
-  component: DoctorDashboard,
+  component: () => {
+    const { userProfile, loading } = useAuth();
+    if (loading) return <FullPageLoader />;
+    if (!userProfile) return <Navigate to="/login" replace />;
+    if (userProfile.role !== 'doctor') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <DoctorDashboard />;
+  },
 });
 
 const adminDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard/admin',
-  component: AdminDashboard,
+  component: () => {
+    const { userProfile, loading } = useAuth();
+    if (loading) return <FullPageLoader />;
+    if (!userProfile) return <Navigate to="/login" replace />;
+    if (userProfile.role !== 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <AdminDashboard />;
+  },
 });
 
 const profileRoute = createRoute({
@@ -206,17 +240,8 @@ const doctorAiSummaryRoute = createRoute({
   component: AIReportSummaryPage,
 });
 
-const analyticsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/analytics',
-  component: AnalyticsPage,
-});
-
-const reportsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/reports',
-  component: AnalyticsPage,
-});
+// Analytics and Reports routes removed as they were redundant with admin/analytics
+// and lacked proper role-based data isolation compared to specialized dashboards.
 
 const doctorAvailabilityRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -289,8 +314,6 @@ const routeTree = rootRoute.addChildren([
   settingsRoute,
   aiReportSummaryRoute,
   doctorAiSummaryRoute,
-  analyticsRoute,
-  reportsRoute,
   doctorAvailabilityRoute,
   doctorAppointmentsRoute,
   adminDashboardSectionRoute,

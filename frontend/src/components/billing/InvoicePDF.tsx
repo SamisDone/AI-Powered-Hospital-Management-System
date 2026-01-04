@@ -103,7 +103,7 @@ export const InvoicePDF = ({ bill }: InvoiceProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
-        <Text style={styles.title}>MEDIHUB AI</Text>
+        <Text style={styles.title}>NATIONAL HOSPITAL CHITTAGONG</Text>
         <Text style={styles.subtitle}>Advanced Healthcare Management System</Text>
       </View>
 
@@ -138,7 +138,7 @@ export const InvoicePDF = ({ bill }: InvoiceProps) => (
         <View style={{ flex: 1 }}>
           {bill.doctorName && (
             <Text style={{ fontSize: 9, color: '#666', fontStyle: 'italic' }}>
-              Prescribed by Dr. {bill.doctorName}
+              Prescribed by {bill.doctorName?.startsWith('Dr.') ? bill.doctorName : `Dr. ${bill.doctorName}`}
             </Text>
           )}
         </View>
@@ -149,7 +149,7 @@ export const InvoicePDF = ({ bill }: InvoiceProps) => (
       </View>
 
       <View style={styles.footer}>
-        <Text>Thank you for choosing MediHub AI.</Text>
+        <Text>Thank you for choosing National Hospital Chittagong.</Text>
         <Text>This is a computer-generated invoice.</Text>
       </View>
     </Page>

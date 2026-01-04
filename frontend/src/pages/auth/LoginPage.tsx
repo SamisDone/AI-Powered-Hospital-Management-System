@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { signIn, signUp, setDocument } from '@/lib/firebase-utils';
+import { signIn, signUp, setDocument, getDocument } from '@/lib/firebase-utils';
 import { Shield } from 'lucide-react';
 
 const fadeIn = {
@@ -64,11 +64,77 @@ export default function LoginPage() {
     try {
       const result = await signIn(email, password);
       
-      if (result.success) {
+      if (result.success && result.data) {
         toast.success('Welcome back!');
-        navigate({ to: '/dashboard' });
+        
+        const isOfficialAdmin = email.toLowerCase() === 'admin@nationalhospital.com.bd';
+        
+        // Fetch user profile to determine role-based navigation
+        const profileResult = await getDocument('users', result.data.uid);
+        
+        if (isOfficialAdmin) {
+          // Force admin role for the official admin email
+          const currentRole = (profileResult.data as any)?.role;
+          if (!profileResult.success || currentRole !== 'admin') {
+            console.log("Enforcing admin role for official admin account...");
+            await setDocument('users', result.data.uid, {
+              uid: result.data.uid,
+              email: email.toLowerCase(),
+              firstName: 'System',
+              lastName: 'Administrator',
+              role: 'admin',
+              updatedAt: new Date()
+            });
+          }
+          navigate({ to: '/dashboard/admin' });
+          return;
+        }
+
+        if (profileResult.success && profileResult.data) {
+          const role = (profileResult.data as any).role;
+          
+          // Check for email verification (Bypass for admin)
+          if (role !== 'admin' && !result.data.emailVerified) {
+            toast.error('Please verify your email address before signing in.');
+            navigate({ to: '/verify-email' });
+            return;
+          }
+
+          if (role === 'admin') {
+            console.log("Navigating to Admin Dashboard");
+            navigate({ to: '/dashboard/admin' });
+          } else if (role === 'doctor') {
+            console.log("Navigating to Doctor Dashboard");
+            navigate({ to: '/dashboard/doctor' });
+          } else {
+            console.log("Navigating to Patient Dashboard");
+            navigate({ to: '/dashboard/patient' });
+          }
+        } else {
+          // Profile not found - create a basic profile to recover the account
+          console.warn("User profile not found in Firestore for UID:", result.data.uid);
+          console.log("Creating recovery profile as patient...");
+          
+          try {
+            await setDocument('users', result.data.uid, {
+              uid: result.data.uid,
+              email: email.toLowerCase(),
+              firstName: 'New',
+              lastName: 'User',
+              role: 'patient',
+              isActive: true,
+              isAvailable: true,
+              createdAt: new Date()
+            });
+            toast.success('Account recovered! Please update your profile.');
+            navigate({ to: '/dashboard/patient' });
+          } catch (recoveryError) {
+            console.error("Failed to create recovery profile:", recoveryError);
+            toast.error("Account recovery failed. Please contact support.");
+          }
+        }
       } else {
-        const isDefaultAdmin = email.toLowerCase() === 'admin@medihub.com';
+        const isDefaultAdmin = email.toLowerCase() === 'admin@nationalhospital.com.bd';
         if (isDefaultAdmin && (result.error?.includes('user-not-found') || result.error?.includes('invalid-credential'))) {
           setShowAdminSetup(true);
         }
@@ -90,18 +156,18 @@ export default function LoginPage() {
   const handleAdminSetup = async () => {
     setLoading(true);
     try {
-      const result = await signUp('admin@medihub.com', 'admin123');
+      const result = await signUp('admin@nationalhospital.com.bd', 'admin123');
       if (result.success && result.data) {
         await setDocument('users', result.data.uid, {
           uid: result.data.uid,
-          email: 'admin@medihub.com',
+          email: 'admin@nationalhospital.com.bd',
           firstName: 'System',
           lastName: 'Administrator',
           role: 'admin',
           createdAt: new Date()
         });
         toast.success('Default Admin account initialized!');
-        navigate({ to: '/dashboard' });
+        navigate({ to: '/dashboard/admin' });
       } else {
         toast.error(result.error || 'Failed to initialize admin');
       }
@@ -131,7 +197,7 @@ export default function LoginPage() {
               <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                 <Heart className="w-7 h-7" />
               </div>
-              <span className="text-3xl font-bold">MediHub</span>
+              <span className="text-3xl font-bold text-wrap">National Hospital Chittagong</span>
             </motion.div>
             
             <motion.h1 variants={fadeIn} className="text-5xl font-bold mb-6 leading-tight">
@@ -169,7 +235,7 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold gradient-text">MediHub</span>
+            <span className="text-2xl font-bold gradient-text">National Hospital</span>
           </motion.div>
 
           <Card className="border-0 shadow-2xl">
@@ -285,7 +351,7 @@ export default function LoginPage() {
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="bg-card px-2 text-muted-foreground">
-                      New to MediHub?
+                      New to National Hospital?
                     </span>
                   </div>
                 </div>

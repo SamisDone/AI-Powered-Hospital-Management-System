@@ -3,14 +3,14 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Firebase configuration for MediHub
+// Firebase configuration for National Hospital
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC7PtMT5lmw0LT5QGpOZKZwLL0S7vHnFKA",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "medihub-d29f1.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "medihub-d29f1",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "medihub-d29f1.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "761244640914",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:761244640914:web:753f640c06f6ae57dc684b"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCII0CHeL36WmarxGZJc7wEs-gt-MRZ6ME",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "medihub-20cde.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "medihub-20cde",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "medihub-20cde.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "688531961914",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:688531961914:web:1892bd0e1d24a6dfe45d03"
 };
 
 // Initialize Firebase

@@ -160,7 +160,7 @@ export default function DoctorSlotsPage() {
           patientId: userProfile.uid,
           patientName: `${userProfile.firstName} ${userProfile.lastName}`,
           doctorId: doctor.uid,
-          doctorName: `${doctor.firstName} ${doctor.lastName}`,
+          doctorName: `Dr. ${doctor.firstName} ${doctor.lastName}`,
           type: 'appointment',
           description: `Consultation with Dr. ${doctor.firstName} ${doctor.lastName}`,
           amount: Number(doctor.consultationFee) || 500,
@@ -242,6 +242,9 @@ export default function DoctorSlotsPage() {
                   <p className="text-sm text-muted-foreground mt-1">
                     {doctor.experience || '5'}+ years experience • {doctor.consultationFee || '500'} BDT per visit
                   </p>
+                  <p className="text-xs text-primary mt-1 font-medium italic">
+                    Note: Availability is managed by the doctor in real-time.
+                  </p>
                 </div>
               </div>
             </GlassCard>
@@ -298,9 +301,15 @@ export default function DoctorSlotsPage() {
                       Please select a date first
                     </p>
                   ) : availableSlotsForSelectedDate.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      No available slots for this date
-                    </p>
+                    <div className="text-center py-12 space-y-3">
+                      <Clock className="w-12 h-12 mx-auto text-muted-foreground/20" />
+                      <p className="text-muted-foreground">
+                        No available slots for this date.
+                      </p>
+                      <p className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                        Tip: Doctors may have different schedules for different days. Try selecting another date.
+                      </p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {availableSlotsForSelectedDate.map((time) => (

@@ -12,6 +12,7 @@ import {
   Filter,
   ShieldAlert
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -20,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { UserProfile } from "@/contexts/AuthContext";
 import { listenToCollection } from "@/lib/firebase-utils";
+import { generateAnalyticsPDF } from "@/lib/pdf-utils";
 
 interface Appointment {
   id: string;
@@ -114,6 +116,20 @@ export default function AdminAnalyticsPage() {
     setDepartmentData(depts);
   };
 
+  const handleExport = async () => {
+    try {
+      await generateAnalyticsPDF({
+        stats,
+        departmentData,
+        date: new Date().toISOString()
+      });
+      toast.success('Global analytics report exported');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export report');
+    }
+  };
+
   return (
     <DashboardLayout role="admin" title="Global Analytics">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -134,7 +150,12 @@ export default function AdminAnalyticsPage() {
                <Layers className="w-4 h-4 mr-2" /> All Specialties
             </Button>
           </div>
-          <Button variant="gradient" size="sm" className="shadow-lg shadow-primary/20">
+          <Button 
+            variant="gradient" 
+            size="sm" 
+            className="shadow-lg shadow-primary/20"
+            onClick={handleExport}
+          >
             <Download className="w-4 h-4 mr-2" /> Global Report
           </Button>
         </div>

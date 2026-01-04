@@ -171,7 +171,9 @@ export default function BillingPage() {
                           <p className="font-medium max-w-[200px] truncate">{bill.description}</p>
                           <div className="flex flex-col gap-0.5 mt-1">
                             {bill.doctorName && (
-                              <p className="text-[10px] text-muted-foreground italic">Dr. {bill.doctorName}</p>
+                              <p className="text-[10px] text-muted-foreground italic">
+                                {bill.doctorName.startsWith('Dr.') ? bill.doctorName : `Dr. ${bill.doctorName}`}
+                              </p>
                             )}
                             {userProfile?.role === 'admin' && (
                               <p className="text-xs text-muted-foreground">{bill.patientName}</p>

@@ -37,7 +37,6 @@ const roleNavigation = {
     { icon: Calendar, label: "Appointments", href: "/appointments" },
     { icon: Search, label: "Find Doctors", href: "/doctor/search" },
     { icon: Brain, label: "Report Summary", href: "/ai-report-summary" },
-    { icon: BarChart3, label: "Health Insights", href: "/analytics" },
     { icon: Pill, label: "Prescriptions", href: "/prescriptions" },
     { icon: FileText, label: "Medical Records", href: "/medical-records" },
     { icon: Beaker, label: "Test Booking", href: "/test-booking" },
@@ -48,8 +47,6 @@ const roleNavigation = {
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Patient Queue", href: "/doctor/appointments" },
     { icon: Calendar, label: "Availability", href: "/doctor/availability" },
-    { icon: Brain, label: "AI Report Genius", href: "/ai-report-summary" },
-    { icon: BarChart3, label: "Analytics & Reports", href: "/analytics" },
     { icon: Settings, label: "Settings", href: "/settings" },
   ],
   admin: [
@@ -130,7 +127,7 @@ export function DashboardSidebar({ role }: SidebarProps) {
               className="flex flex-col"
             >
               <span className="font-bold text-lg text-foreground leading-none">
-                MediHub
+                National Hospital
               </span>
               <span className="text-[10px] font-medium text-primary tracking-widest">
                 AI POWERED

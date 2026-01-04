@@ -1,10 +1,12 @@
-# MediHub Project Structure & File Guide
+# NH Chittagong Project Structure & File Guide
 
-This document provides a comprehensive overview of the MediHub application's directory structure and core files.
+This document provides a comprehensive overview of the National Hospital Chittagong application's directory structure and core files.
 
 ## 📁 Root Directory
 
 - `/frontend`: The core React application (built with Vite).
+- `/frontend/server`: Node.js proxy for secure AI interactions.
+  - `proxy.js`: Google Gemini 2.5 integration and fallback logic.
 - `FEATURES_ADDED.md`: A detailed record of all enhancements and fixes implemented.
 - `PROJECT_STRUCTURE.md`: This file (documentation of the codebase).
 - `README.md`: General project overview and setup instructions.
