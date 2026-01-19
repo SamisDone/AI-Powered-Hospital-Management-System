@@ -43,9 +43,36 @@ National Hospital Chittagong (NHC) is a comprehensive, modern healthcare platfor
 
 ## 📖 How to Run
 
-1. **Install Dependencies**: `npm install`
-2. **Setup Proxy**: `cd server && npm install`
-3. **Configure Environment**: Set up your `.env` in the `frontend` directory with Firebase and Gemini keys.
-4. **Start Application**:
-   - Frontend: `npm run dev`
-   - AI Proxy: `node server/proxy.js`
+### 1. Install Dependencies
+
+You need to install dependencies for both the frontend and the AI proxy server:
+
+- **Frontend**:
+  ```bash
+  cd frontend
+  npm install
+  ```
+- **AI Proxy Server**:
+  ```bash
+  cd frontend/server
+  npm install
+  ```
+
+### 2. Configure Environment
+
+Set up your `.env` in the `frontend` directory. A template/existing `.env` is already provided with Firebase and Gemini keys.
+
+### 3. Start the Application
+
+You must run both the proxy server and the frontend concurrently:
+
+- **Terminal 1 (AI Proxy)**:
+  ```bash
+  cd frontend/server
+  npm start
+  ```
+- **Terminal 2 (Frontend)**:
+  ```bash
+  cd frontend
+  npm run dev
+  ```
