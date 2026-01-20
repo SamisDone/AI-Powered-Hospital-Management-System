@@ -3,7 +3,7 @@
  * Uses the LOCAL PROXY to bypass CORS issues
  */
 
-const PROXY_URL = 'http://127.0.0.1:3001';
+const PROXY_URL = '/api/proxy';
 
 export async function analyzeMedicalRecord(fileUrl: string): Promise<string> {
     try {
